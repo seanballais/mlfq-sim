@@ -24,7 +24,7 @@ class ProcessControlBlock:
         self.burst_time = burst_time
         self.remaining_time = burst_time
         self.priority = priority
-        self.execution_history = {}
+        self.execution_history = []
 
     def __repr__(self):
         return 'A Generic Process (pid {0})\n' \
