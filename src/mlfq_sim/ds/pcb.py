@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from mlfq_sim.exceptions import ExecutionRecordingException
+
 class ProcessControlBlock:
     class ExecutionHistoryItem:
         def __init__(self, start_time, length):
@@ -28,7 +30,7 @@ class ProcessControlBlock:
 
     def __repr__(self):
         return 'A Generic Process (pid {0})\n' \
-               'Arrival: {1}\tBurst: {1}\tPriority: {3}'.format(self.pid,
+               'Arrival: {1}\tBurst: {2}\tPriority: {3}'.format(self.pid,
                                                                 self.arrival_time,
                                                                 self.burst_time,
                                                                 self.priority)
@@ -45,12 +47,41 @@ class ProcessControlBlock:
     def get_remaining_time(self):
         return self.remaining_time
 
-    def get_priority():
+    def get_priority(self):
         return self.priority
 
-    def execute(self, start_time, length):
+    def get_execution_history(self):
+        return self.execution_history
+
+    def record_execution(self, start_time, length):
         if self.remaining_time == 0:
-            return
+            raise ExecutionRecordingException('Cannot record execution period ' \
+                                              'because the process has already' \
+                                              ' completed execution.')
+
+        if len(self.execution_history) > 0:
+            max_item_index = max(len(self.execution_history) - 1, 0)
+            recent_execution_item = self.execution_history[max_item_index]
+            recent_item_start = recent_execution_item.get_start()
+            recent_item_length = recent_execution_item.get_length()
+
+            if (start_time <= recent_item_start  # Remember that we cannot run a process
+                                                 # in the past, only in the present.
+                or start_time < recent_item_start + recent_item_length  # We can start the process
+                                                                        # exactly right where we
+                                                                        # ended the process
+                                                                        # execution temporarily.
+                                                                        # Thus, we are allowing
+                                                                        # `start_time`` to be equal
+                                                                        # to `recent_item_start +
+                                                                        # recent_item_length`. That
+                                                                        # we are only using `<`
+                                                                        # instead of `<=`.
+                ):
+                raise ExecutionRecordingException('Cannot record an execution period that has' \
+                                                  ' occurred in the past, or in between ' \
+                                                  'a certain previous execution period of ' \
+                                                  'the process.')
 
         self.remaining_time = max(self.remaining_time - length, 0)
-        self.execution_history.append(ExecutionHistoryItem(start_time, length))
+        self.execution_history.append(ProcessControlBlock.ExecutionHistoryItem(start_time, length))
