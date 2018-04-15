@@ -1,11 +1,32 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from mlfq_sim.exceptions import ExecutionRecordingException
-from items import ExecutionHistoryItem
-
 
 class ProcessControlBlock:
+    class ExecutionHistoryItem:
+        def __init__(self, start_time, length):
+            self.start_time = start_time
+            self.length = length
+
+        def __repr__(self):
+            return 'Execution History Item ' \
+                   '(executed starting at {0} for {1} units)'.format(self.start_time,
+                                                                     self.length)
+
+        def get_start(self):
+            return self.start_time
+
+        def get_length(self):
+            return self.length
+
+        def get_end(self):
+            return self.start_time + self.length
+
+    class ExecutionRecordingException(Exception):
+        def __init__(self, *args, **kwargs):
+           Exception.__init__(self, *args, **kwargs)
+
+
     def __init__(self, pid, arrival_time, burst_time, priority):
         self.pid = pid
         self.arrival_time = arrival_time
@@ -41,9 +62,9 @@ class ProcessControlBlock:
 
     def record_execution(self, start_time, length):
         if self.remaining_time == 0:
-            raise ExecutionRecordingException('Cannot record execution period ' \
-                                              'because the process has already' \
-                                              ' completed execution.')
+            raise self.ExecutionRecordingException('Cannot record execution period ' \
+                                                   'because the process has already' \
+                                                   ' completed execution.')
 
         if len(self.execution_history) > 0:
             max_item_index = max(len(self.execution_history) - 1, 0)
@@ -64,10 +85,10 @@ class ProcessControlBlock:
                                                                         # we are only using `<`
                                                                         # instead of `<=`.
                 ):
-                raise ExecutionRecordingException('Cannot record an execution period that has' \
-                                                  ' occurred in the past, or in between ' \
-                                                  'a certain previous execution period of ' \
-                                                  'the process.')
+                raise self.ExecutionRecordingException('Cannot record an execution period that has' \
+                                                       ' occurred in the past, or in between ' \
+                                                       'a certain previous execution period of ' \
+                                                       'the process.')
 
         self.remaining_time = max(self.remaining_time - length, 0)
-        self.execution_history.append(ExecutionHistoryItem(start_time, length))
+        self.execution_history.append(self.ExecutionHistoryItem(start_time, length))

@@ -4,7 +4,6 @@
 import pytest
 
 from mlfq_sim.ds import ProcessControlBlock
-from mlfq_sim.exceptions import ExecutionRecordingException
 
 class TestProcessControlBlock:
     @classmethod
@@ -38,13 +37,13 @@ class TestProcessControlBlock:
 
         # Test that we do not reduce the remaining time when the start
         # time is less than the time when the process was last executed.
-        with pytest.raises(ExecutionRecordingException) as ee_info:
+        with pytest.raises(ProcessControlBlock.ExecutionRecordingException) as ee_info:
             self.pcb.record_execution(11, 6)
         
-        with pytest.raises(ExecutionRecordingException) as ee_info:
+        with pytest.raises(ProcessControlBlock.ExecutionRecordingException) as ee_info:
             self.pcb.record_execution(12, 6)
 
-        with pytest.raises(ExecutionRecordingException) as ee_info:
+        with pytest.raises(ProcessControlBlock.ExecutionRecordingException) as ee_info:
             self.pcb.record_execution(13, 5)
         
         assert self.pcb.get_remaining_time() == 6
@@ -52,9 +51,10 @@ class TestProcessControlBlock:
         execution_history_item = self.pcb.get_execution_history()[0]
         assert execution_history_item.get_start() == 12
         assert execution_history_item.get_length() == 6
+        assert execution_history_item.get_end() == 18
 
         self.pcb.record_execution(20, 6)
         assert len(self.pcb.get_execution_history()) == 2
 
-        with pytest.raises(ExecutionRecordingException) as ee_info:
+        with pytest.raises(ProcessControlBlock.ExecutionRecordingException) as ee_info:
             self.pcb.record_execution(11, 6)

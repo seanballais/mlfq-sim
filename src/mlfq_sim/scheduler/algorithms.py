@@ -7,10 +7,27 @@ import queue
 
 from sortedcontainers import SortedList
 
-from mlfq_sim.ds.items import ScheduleItem
-
 
 class SchedulingAlgorithm:
+    class ScheduleItem:
+        def __init__(self, pid, start_time, length):
+            self.pid = pid
+            self.start_time = start_time
+            self.length = length
+
+        def get_pid(self):
+            return self.pid
+
+        def get_start_time(self):
+            return self.start_time
+
+        def get_length(self):
+            return self.length
+
+        def get_end(self):
+            return self.start_time + self.length
+
+
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
@@ -32,9 +49,9 @@ class SortableScheduling(SchedulingAlgorithm):
         sorted_processes = sorted(processes,
                                   key=self.get_sort_criterion)
         for process in sorted_processes:
-            schedule.put(ScheduleItem(process.get_pid(),
-                                      process_start,
-                                      process.get_length()))
+            schedule.put(super.ScheduleItem(process.get_pid(),
+                                            process_start,
+                                            process.get_length()))
             process_start += process.get_length()
 
         return schedule
