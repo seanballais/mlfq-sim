@@ -2,24 +2,10 @@
 # -*- coding: utf-8 -*-
 
 from mlfq_sim.exceptions import ExecutionRecordingException
+from items import ExecutionHistoryItem
+
 
 class ProcessControlBlock:
-    class ExecutionHistoryItem:
-        def __init__(self, start_time, length):
-            self.start_time = start_time
-            self.length = length
-
-        def __repr__(self):
-            return 'Execution History Item ' \
-                   '(executed starting at {0} for {1} units)'.format(self.start_time,
-                                                                     self.length)
-
-        def get_start(self):
-            return self.start_time
-
-        def get_length(self):
-            return self.length
-
     def __init__(self, pid, arrival_time, burst_time, priority):
         self.pid = pid
         self.arrival_time = arrival_time
@@ -84,4 +70,4 @@ class ProcessControlBlock:
                                                   'the process.')
 
         self.remaining_time = max(self.remaining_time - length, 0)
-        self.execution_history.append(ProcessControlBlock.ExecutionHistoryItem(start_time, length))
+        self.execution_history.append(ExecutionHistoryItem(start_time, length))
