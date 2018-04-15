@@ -18,13 +18,19 @@ class SchedulingAlgorithm:
         pass
 
 
-class FCFS(SchedulingAlgorithm):
+class SortableScheduling(SchedulingAlgorithm):
+    __metaclass__ = abc.ABCMeta
+
+    @abc.abstractmethod
+    def get_sort_criterion(self, process):
+        pass
+
     def schedule(self, processes):
         schedule = queue.Queue(0)
 
         process_start = 0
         sorted_processes = sorted(processes,
-                                  key=lambda process: process.get_arrival_time())
+                                  key=self.get_sort_criterion)
         for process in sorted_processes:
             schedule.put(ScheduleItem(process.get_pid(),
                                       process_start,
@@ -32,22 +38,16 @@ class FCFS(SchedulingAlgorithm):
             process_start += process.get_length()
 
         return schedule
+
+
+class FCFS(SortableScheduling):
+    def get_sort_criterion(self, process):
+        return process.get_arrival_time()
 
 
 class SJF(SchedulingAlgorithm):
-    def schedule(self, processes):
-        schedule = queue.Queue(0)
-
-        process_start = 0
-        sorted_processes = sorted(processes,
-                                  key=lambda process: process.get_arrival_time())
-        for process in sorted_processes:
-            schedule.put(ScheduleItem(process.get_pid(),
-                                      process_start,
-                                      process.get_length()))
-            process_start += process.get_length()
-
-        return schedule
+    def get_sort_criterion(self, process):
+        return process.get_burst_time()
 
 
 class SRTF(SchedulingAlgorithm):
