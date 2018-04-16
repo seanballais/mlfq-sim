@@ -5,5 +5,7 @@
   "tests/ds/pcb_test.py::TestProcessControlBlock::()::test_burst_time",
   "tests/ds/pcb_test.py::TestProcessControlBlock::()::test_remaining_time",
   "tests/ds/pcb_test.py::TestProcessControlBlock::()::test_priority",
-  "tests/ds/pcb_test.py::TestProcessControlBlock::()::test_execute_func"
+  "tests/ds/pcb_test.py::TestProcessControlBlock::()::test_execute_func",
+  "tests/scheduler/algorithms_test.py::TestSchedulingAlgorithms::()::test_fcfs",
+  "tests/scheduler/algorithms_test.py::TestSchedulingAlgorithms::()::test_sjf"
 ]

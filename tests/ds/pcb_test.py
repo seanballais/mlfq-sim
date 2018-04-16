@@ -32,19 +32,19 @@ class TestProcessControlBlock:
     def test_execute_func(self):
         # Test that we get the correct remaining time after executing
         # the process starting at 12 for 6 units.
-        self.pcb.record_execution(12, 6)
+        self.pcb.execute(12, 6)
         assert self.pcb.get_remaining_time() == 6
 
         # Test that we do not reduce the remaining time when the start
         # time is less than the time when the process was last executed.
         with pytest.raises(ProcessControlBlock.ExecutionRecordingException) as ee_info:
-            self.pcb.record_execution(11, 6)
+            self.pcb.execute(11, 6)
         
         with pytest.raises(ProcessControlBlock.ExecutionRecordingException) as ee_info:
-            self.pcb.record_execution(12, 6)
+            self.pcb.execute(12, 6)
 
         with pytest.raises(ProcessControlBlock.ExecutionRecordingException) as ee_info:
-            self.pcb.record_execution(13, 5)
+            self.pcb.execute(13, 5)
         
         assert self.pcb.get_remaining_time() == 6
 
@@ -53,8 +53,8 @@ class TestProcessControlBlock:
         assert execution_history_item.get_length() == 6
         assert execution_history_item.get_end() == 18
 
-        self.pcb.record_execution(20, 6)
+        self.pcb.execute(20, 6)
         assert len(self.pcb.get_execution_history()) == 2
 
         with pytest.raises(ProcessControlBlock.ExecutionRecordingException) as ee_info:
-            self.pcb.record_execution(11, 6)
+            self.pcb.execute(11, 6)
