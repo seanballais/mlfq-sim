@@ -22,6 +22,7 @@ class ProcessControlBlock:
         def get_end(self):
             return self.start_time + self.length
 
+
     class ExecutionRecordingException(Exception):
         def __init__(self, *args, **kwargs):
            Exception.__init__(self, *args, **kwargs)
@@ -60,7 +61,7 @@ class ProcessControlBlock:
     def get_execution_history(self):
         return self.execution_history
 
-    def record_execution(self, start_time, length):
+    def execute(self, start_time, length):
         if self.remaining_time == 0:
             raise self.ExecutionRecordingException('Cannot record execution period ' \
                                                    'because the process has already' \

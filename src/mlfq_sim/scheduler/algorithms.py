@@ -4,8 +4,7 @@
 import abc
 import copy
 import queue
-
-from sortedcontainers import SortedList
+import heapq
 
 
 class SchedulingAlgorithm:
@@ -39,37 +38,69 @@ class SortableScheduling(SchedulingAlgorithm):
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
-    def get_sort_criterion(self, process):
+    def _get_sort_criterion(self, process):
         pass
 
     def schedule(self, processes):
-        schedule = queue.Queue(0)
+        schedule = queue.Queue()
+        proxy_processes = copy.deepcopy(processes)
 
         process_start = 0
-        sorted_processes = sorted(processes,
-                                  key=self.get_sort_criterion)
+        sorted_processes = sorted(proxy_processes,
+                                  key=self._get_sort_criterion)
         for process in sorted_processes:
-            schedule.put(super.ScheduleItem(process.get_pid(),
-                                            process_start,
-                                            process.get_length()))
-            process_start += process.get_length()
+            schedule.put(SchedulingAlgorithm.ScheduleItem(process.get_pid(),
+                                                          process_start,
+                                                          process.get_burst_time()))
+            process_start += process.get_burst_time()
 
         return schedule
 
 
 class FCFS(SortableScheduling):
-    def get_sort_criterion(self, process):
+    def _get_sort_criterion(self, process):
         return process.get_arrival_time()
 
 
-class SJF(SchedulingAlgorithm):
-    def get_sort_criterion(self, process):
+class SJF(SortableScheduling):
+    def _get_sort_criterion(self, process):
         return process.get_burst_time()
 
 
 class SRTF(SchedulingAlgorithm):
+    class ProcessBurstQueue(queue.PriorityQueue):
+        def __init__(self, max_size=0):
+            super().__init__(self, max_size)
+            self._index = 0
+
+        def _put(self, process):
+            heapq.heappush(self.queue, (process.get_remaining_time(), self._index, process))
+            self._index += 1
+
+        def _get(self):
+            return heapq.heappop(self.queue)[2]  # The object itself is the third element
+                                                 # in the tuple.
+
+        def peek(self):
+            return self.queue[0]
+
+
     def schedule(self, processes):
-        pass
+        schedule = queue.Queue()
+        proxy_processes = self._create_process_queue(processes)
+        process_queue = self.ProcessBurstQueue()
+
+        while not process_queue.empty() or not proxy_processes.empty():
+            curr_process = proxy_processes.get() or process_queue.empty()
+    
+    def _create_process_queue(self, processes):
+        proxy_processes = copy.deepcopy(processes)
+        proxy_processes.sort(key=lambda proxy_process: proxy_process.get_arrival_time())
+        q = queue.PriorityQueue()
+        for process in proxy_processes:
+            q.put(process)
+
+        return q
 
 
 class NonPreemptivePriority(SchedulingAlgorithm):
