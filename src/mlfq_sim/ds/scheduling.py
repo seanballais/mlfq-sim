@@ -26,7 +26,7 @@ class ScheduleItem:
 
 class WaitQueue(queue.PriorityQueue):
     def __init__(self, key=lambda process: process.get_arrival_time(), max_size=0):
-        super().__init__(self, max_size)
+        super().__init__(max_size)
         self._index = 0
         self._key = key
 

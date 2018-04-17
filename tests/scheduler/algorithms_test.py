@@ -31,7 +31,7 @@ class TestSchedulingAlgorithms:
             pid_index += 1
 
     def test_non_preemptive(self):
-        pass
+        algorithms.non_preemptive(self.processes)
         #scheduled_processes = algorithms.non_preemptive(self.processes)
         #expected_pid_order = [0, 2, 1]
         #pid_index = 0
