@@ -43,11 +43,6 @@ def srtf(processes):
     pass
 
 def non_preemptive(processes):
-    #wait_queue = SchedulingAlgorithm.WaitQueue(key=lambda process: process.get_priority())
-    #proxy_processes = SchedulingAlgorithm.queue_by_arrival(processes)
-    #schedule = queue.Queue()
-
-    #while not proxy_processes.empty() or not wait_queue.empty():
     pass
 
 def preemptive(processes):
