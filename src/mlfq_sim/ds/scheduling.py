@@ -41,3 +41,14 @@ class WaitQueue(queue.PriorityQueue):
 
     def peek(self):
         return self.queue[0]
+
+
+class ArrivalQueue(WaitQueue):
+    def __init__(self, max_size=0):
+        super().__init__(max_size)
+
+    def get_process(self, arrival_time, block=True, timeout=None):
+        if arrival_time == self.peek().get_arrival_time():
+            return self.get(block, timeout)
+
+        return None

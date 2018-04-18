@@ -61,7 +61,7 @@ class ProcessControlBlock:
     def get_execution_history(self):
         return self.execution_history
 
-    def execute(self, start_time, length):
+    def execute(self, start_time, length, record=True):
         if self.remaining_time == 0:
             raise self.ExecutionRecordingException('Cannot record execution period ' \
                                                    'because the process has already' \
@@ -92,4 +92,6 @@ class ProcessControlBlock:
                                                        'the process.')
 
         self.remaining_time = max(self.remaining_time - length, 0)
-        self.execution_history.append(self.ExecutionHistoryItem(start_time, length))
+        
+        if record:
+            self.execution_history.append(self.ExecutionHistoryItem(start_time, length))
