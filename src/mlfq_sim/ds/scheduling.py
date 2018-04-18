@@ -41,7 +41,11 @@ class WaitQueue(queue.PriorityQueue):
     def _get(self):
         # The object itself is the fourth element
         # in the tuple.
-        return heapq.heappop(self.queue)[3]
+        try:
+            process = heapq.heappop(self.queue)
+            return process[3]
+        except IndexError:
+            return None
 
     def peek(self):
         if len(self.queue) == 0:

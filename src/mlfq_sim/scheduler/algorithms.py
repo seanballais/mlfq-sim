@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import abc
 import copy
 import queue
 
@@ -44,14 +43,14 @@ def non_preemptive(processes):
     wait_queue = WaitQueue(key=lambda process: -process.get_priority())
 
     # Populate the arrival queue.
-    for process in proxy_processes:
-        arrival_queue.put(process)
+    for proxy_process in proxy_processes:
+        arrival_queue.put(proxy_process)
 
     # Time to schedule.
     run_time = 0
     process_start = 0
     curr_process = arrival_queue.get_process(run_time)
-    while not arrival_queue.empty() or not wait_queue.empty():
+    while not arrival_queue.empty() or not wait_queue.empty() or curr_process is not None:
         if curr_process is not None:
             new_process = arrival_queue.get_process(run_time)
             if new_process is not None:
@@ -63,6 +62,7 @@ def non_preemptive(processes):
                     new_process = arrival_queue.get_process(run_time)
 
             curr_process.execute(process_start, 1, record=False)
+            run_time += 1
             if curr_process.get_remaining_time() == 0:
                 schedule.put(ScheduleItem(curr_process.get_pid(),
                                           process_start,
@@ -72,29 +72,36 @@ def non_preemptive(processes):
                 # We can safely get from the wait queue since at this point,
                 # any newly arrived processes have been placed in the
                 # wait queue.
-                curr_process = wait_queue.get()
+                if not wait_queue.empty():
+                    # This goes to an infinite loop if we don't check the queue's size.
+                    # We should investigate this. Sean, investigate it.
+                    curr_process = wait_queue.get()
+                else:
+                    curr_process = None
                 process_start = run_time
         else:
             # There is no currently running process.
             # Let's check the arrival queue first.
             new_process = arrival_queue.get_process(run_time)
-            waiting_process = wait_queue.get()
-
-            if new_process.get_priority() > waiting_process.get_priority():
-                curr_process = new_process
-                wait_queue.put(waiting_process)
+            if not wait_queue.empty():
+                waiting_process = wait_queue.get()
             else:
-                # We give higher precedence to those waiting in
-                # the queue if they have the same priority
-                # to prevent starvation.
-                curr_process = waiting_process
-                wait_queue.put(new_process)
+                waiting_process = None
+
+            if new_process is not None and waiting_process is not None:
+                if new_process.get_priority() > waiting_process.get_priority():
+                    curr_process = new_process
+                    wait_queue.put(waiting_process)
+                else:
+                    # We give higher precedence to those waiting in
+                    # the queue if they have the same priority
+                    # to prevent starvation.
+                    curr_process = waiting_process
+                    wait_queue.put(new_process)
         
-            process_start = run_time
+                process_start = run_time
 
-        run_time += 1
-
-    print(schedule_tmp)
+            run_time += 1
 
     return schedule
 
