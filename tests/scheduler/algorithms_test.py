@@ -34,3 +34,6 @@ class TestSchedulingAlgorithms:
     def test_non_preemptive(self):
         self._test_algorithms(algorithms.non_preemptive, [0, 2, 4, 1, 3])
 
+    def test_preemptive(self):
+        self._test_algorithms(algorithms.preemptive, [0, 1, 2, 4, 1, 0, 3])
+

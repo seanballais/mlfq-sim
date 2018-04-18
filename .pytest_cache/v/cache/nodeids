@@ -8,5 +8,6 @@
   "tests/ds/pcb_test.py::TestProcessControlBlock::()::test_execute_func",
   "tests/scheduler/algorithms_test.py::TestSchedulingAlgorithms::()::test_fcfs",
   "tests/scheduler/algorithms_test.py::TestSchedulingAlgorithms::()::test_sjf",
-  "tests/scheduler/algorithms_test.py::TestSchedulingAlgorithms::()::test_non_preemptive"
+  "tests/scheduler/algorithms_test.py::TestSchedulingAlgorithms::()::test_non_preemptive",
+  "tests/scheduler/algorithms_test.py::TestSchedulingAlgorithms::()::test_preemptive"
 ]
