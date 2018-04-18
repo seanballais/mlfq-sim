@@ -11,7 +11,7 @@ class TestProcessControlBlock:
         self.pcb = ProcessControlBlock(0, 12, 12, 1)
 
     def test_repr(self):
-        assert repr(self.pcb) == 'A Generic Process (pid 0)\n' \
+        assert repr(self.pcb) == 'A Generic Process (pid 0)\t' \
                                  'Arrival: 12\tBurst: 12\tPriority: 1'
 
     def test_pid(self):

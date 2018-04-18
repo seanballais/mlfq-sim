@@ -29,26 +29,37 @@ class WaitQueue(queue.PriorityQueue):
         super().__init__(max_size)
         self._index = 0
         self._key = key
+        self._priority_key = lambda process: process.get_priority()
 
     def _put(self, process):
-        heapq.heappush(self.queue, (self._key(process), self._index, process))
+        heapq.heappush(self.queue, (self._key(process),
+                                    self._priority_key(process),
+                                    self._index,
+                                    process))
         self._index += 1
 
     def _get(self):
-        # The object itself is the third element
+        # The object itself is the fourth element
         # in the tuple.
-        return heapq.heappop(self.queue)[2]
+        return heapq.heappop(self.queue)[3]
 
     def peek(self):
-        return self.queue[0]
+        if len(self.queue) == 0:
+            return None
+        
+        return self.queue[0][3]
+
+    def to_str(self):
+        return str(self.queue)
 
 
 class ArrivalQueue(WaitQueue):
     def __init__(self, max_size=0):
-        super().__init__(max_size)
+        super().__init__(max_size=0)
 
     def get_process(self, arrival_time, block=True, timeout=None):
-        if arrival_time == self.peek().get_arrival_time():
-            return self.get(block, timeout)
+        new_process = self.peek()
+        if new_process is not None and arrival_time == new_process.get_arrival_time():
+                return self.get(block, timeout)
 
         return None

@@ -37,10 +37,11 @@ def srtf(processes):
 
 def non_preemptive(processes):
     schedule = queue.Queue()
+    schedule_tmp = []
     proxy_processes = copy.deepcopy(processes)
 
     arrival_queue = ArrivalQueue()
-    wait_queue = WaitQueue(key=lambda process: process.get_priority())
+    wait_queue = WaitQueue(key=lambda process: -process.get_priority())
 
     # Populate the arrival queue.
     for process in proxy_processes:
@@ -66,10 +67,13 @@ def non_preemptive(processes):
                 schedule.put(ScheduleItem(curr_process.get_pid(),
                                           process_start,
                                           curr_process.get_burst_time()))
+                schedule_tmp.append(curr_process)
+
                 # We can safely get from the wait queue since at this point,
                 # any newly arrived processes have been placed in the
                 # wait queue.
                 curr_process = wait_queue.get()
+                process_start = run_time
         else:
             # There is no currently running process.
             # Let's check the arrival queue first.
@@ -89,6 +93,10 @@ def non_preemptive(processes):
             process_start = run_time
 
         run_time += 1
+
+    print(schedule_tmp)
+
+    return schedule
 
 def preemptive(processes):
     pass

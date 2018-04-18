@@ -37,7 +37,7 @@ class ProcessControlBlock:
         self.execution_history = []
 
     def __repr__(self):
-        return 'A Generic Process (pid {0})\n' \
+        return 'A Generic Process (pid {0})\t' \
                'Arrival: {1}\tBurst: {2}\tPriority: {3}'.format(self.pid,
                                                                 self.arrival_time,
                                                                 self.burst_time,
