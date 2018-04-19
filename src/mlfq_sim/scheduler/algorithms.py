@@ -7,33 +7,80 @@ import queue
 from mlfq_sim.ds.scheduling import ScheduleItem
 from mlfq_sim.ds.scheduling import WaitQueue
 from mlfq_sim.ds.scheduling import ArrivalQueue
+from mlfq_sim.ds.scheduling import PeekableQueue
 
 
 def fcfs(processes):
-    return sortably_schedule(processes, lambda process: process.get_arrival_time())
+    return _sortably_schedule(processes, lambda process: process.get_arrival_time())
 
 
 def sjf(processes):
-    return sortably_schedule(processes, lambda process: process.get_burst_time())
+    return _sortably_schedule(processes, lambda process: process.get_burst_time())
 
 
 def srtf(processes):
-    return simulation_schedule(processes, 'get_remaining_time', is_preemptive=True, high_number_prio=False)
+    return _priority_based_schedule(processes, 'get_remaining_time', is_preemptive=True, high_number_prio=False)
 
 
 def non_preemptive(processes):
-    return simulation_schedule(processes, 'get_priority')
+    return _priority_based_schedule(processes, 'get_priority')
 
 
 def preemptive(processes):
-    return simulation_schedule(processes, 'get_priority', is_preemptive=True)
+    return _priority_based_schedule(processes, 'get_priority', is_preemptive=True)
 
 
-def round_robin(processes):
-    pass
+def round_robin(processes, quanta=5):
+    schedule = queue.Queue()
+    proxy_processes = copy.deepcopy(processes)
+    proxy_processes = sorted(proxy_processes, key=lambda process: process.get_arrival_time())
+
+    ready_queue = PeekableQueue()
+    for proxy_process in proxy_processes:
+        ready_queue.put(proxy_process)
+
+    run_time = 0
+    process_start = 0
+    quanta_counter = 0
+    curr_process = None
+    encountered_processes = set()
+    while not ready_queue.empty():
+        if curr_process is None:
+            if ready_queue.peek() is not None:
+                if (ready_queue.peek().get_arrival_time() <= run_time
+                   or ready_queue.peek().get_pid() in encountered_processes):
+                    curr_process = ready_queue.get()
+                    encountered_processes.add(curr_process.get_pid())
+                    process_start = run_time
+                else:
+                    run_time += 1
+                    continue
+            else:
+                # No process for us yet. :(
+                # Let's move on for now.
+                run_time += 1
+                continue
+
+        while quanta_counter < quanta and curr_process.get_remaining_time() > 0:
+            curr_process.execute(process_start, 1, record=False)
+            run_time += 1
+            quanta_counter += 1
+
+        schedule.put(ScheduleItem(curr_process.get_pid(),
+                                  process_start,
+                                  run_time - process_start))
+
+        if curr_process.get_remaining_time() > 0:
+            # Still got stuff to do.
+            ready_queue.put(curr_process)
+
+        curr_process = None
+        quanta_counter = 0
+
+    return schedule
 
 
-def sortably_schedule(processes, sort_criterion):
+def _sortably_schedule(processes, sort_criterion):
     schedule = queue.Queue()
     proxy_processes = copy.deepcopy(processes)
 
@@ -49,9 +96,10 @@ def sortably_schedule(processes, sort_criterion):
     return schedule
 
 
-def simulation_schedule(processes, priority_criterion, is_preemptive=False, high_number_prio=True):
+def _priority_based_schedule(processes, priority_criterion, is_preemptive=False, high_number_prio=True):
     schedule = queue.Queue()
     proxy_processes = copy.deepcopy(processes)
+    proxy_processes = sorted(proxy_processes, key=lambda process: process.get_arrival_time())
 
     arrival_queue = ArrivalQueue()
 
@@ -69,6 +117,7 @@ def simulation_schedule(processes, priority_criterion, is_preemptive=False, high
         key=lambda process: (-getattr(process, priority_criterion)() if high_number_prio
                              else getattr(process, priority_criterion)())
     )
+
     # Populate the arrival queue.
     for proxy_process in proxy_processes:
         arrival_queue.put(proxy_process)
@@ -96,8 +145,6 @@ def simulation_schedule(processes, priority_criterion, is_preemptive=False, high
                 if is_preemptive:
                     if not wait_queue.empty():
                         new_process = wait_queue.get()
-                    else:
-                        new_process = None
 
                     # New process should preempt the current process since it has
                     # a higher priority.

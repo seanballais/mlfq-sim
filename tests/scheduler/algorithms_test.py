@@ -16,15 +16,6 @@ class TestSchedulingAlgorithms:
                           ProcessControlBlock(3, 3, 5, 1),
                           ProcessControlBlock(4, 7, 1, 4)]
 
-    def _test_algorithms(self, algorithm, expected_pid_order):
-        scheduled_processes = algorithm(self.processes)
-        assert scheduled_processes.qsize() == len(expected_pid_order)
-
-        pid_index = 0
-        while not scheduled_processes.empty():
-            assert scheduled_processes.get().get_pid() == expected_pid_order[pid_index]
-            pid_index += 1
-
     def test_fcfs(self):
         self._test_algorithms(algorithms.fcfs, [0, 1, 2, 3, 4])
 
@@ -40,3 +31,18 @@ class TestSchedulingAlgorithms:
     def test_preemptive(self):
         self._test_algorithms(algorithms.preemptive, [0, 1, 2, 4, 1, 0, 3])
 
+    def test_round_robin(self):
+        self._test_algorithms(algorithms.round_robin, [0, 1, 2, 3, 4, 0, 2], 5)
+
+    def _test_algorithms(self, algorithm, expected_pid_order, quanta=0):
+        if quanta > 0:
+            scheduled_processes = algorithm(self.processes, quanta)
+        else:
+            scheduled_processes = algorithm(self.processes)
+
+        assert scheduled_processes.qsize() == len(expected_pid_order)
+
+        pid_index = 0
+        while not scheduled_processes.empty():
+            assert scheduled_processes.get().get_pid() == expected_pid_order[pid_index]
+            pid_index += 1

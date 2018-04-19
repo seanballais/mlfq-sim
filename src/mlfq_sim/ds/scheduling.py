@@ -24,6 +24,17 @@ class ScheduleItem:
         return self.start_time + self.length
 
 
+class PeekableQueue(queue.Queue):
+    def __init__(self, max_size=0):
+        super().__init__(max_size)
+
+    def peek(self):
+        if len(self.queue) == 0:
+            return None
+
+        return self.queue[0]
+
+
 class WaitQueue(queue.PriorityQueue):
     def __init__(self, key=lambda process: process.get_arrival_time(), max_size=0):
         super().__init__(max_size)

@@ -10,5 +10,6 @@
   "tests/scheduler/algorithms_test.py::TestSchedulingAlgorithms::()::test_sjf",
   "tests/scheduler/algorithms_test.py::TestSchedulingAlgorithms::()::test_srtf",
   "tests/scheduler/algorithms_test.py::TestSchedulingAlgorithms::()::test_non_preemptive",
-  "tests/scheduler/algorithms_test.py::TestSchedulingAlgorithms::()::test_preemptive"
+  "tests/scheduler/algorithms_test.py::TestSchedulingAlgorithms::()::test_preemptive",
+  "tests/scheduler/algorithms_test.py::TestSchedulingAlgorithms::()::test_round_robin"
 ]
