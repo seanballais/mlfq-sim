@@ -65,7 +65,7 @@ def non_preemptive(processes):
             if curr_process.get_remaining_time() == 0:
                 schedule.put(ScheduleItem(curr_process.get_pid(),
                                           process_start,
-                                          curr_process.get_burst_time()))
+                                          run_time - process_start))
 
                 # We can safely get from the wait queue since at this point,
                 # any newly arrived processes have been placed in the
@@ -136,15 +136,16 @@ def preemptive(processes):
 
                 # New process should preempt the current process since it has
                 # a higher priority.
-                if new_process.get_priority() > curr_process.get_priority():
-                    schedule.put(ScheduleItem(curr_process.get_pid(),
-                                              process_start,
-                                              run_time - process_start))
-                    wait_queue.put(curr_process)
-                    curr_process = new_process
-                    process_start = run_time
-                else:
-                    wait_queue.put(new_process)  # Back to gul... waiting queue now.
+                if new_process is not None:
+                    if new_process.get_priority() > curr_process.get_priority():
+                        schedule.put(ScheduleItem(curr_process.get_pid(),
+                                                  process_start,
+                                                  run_time - process_start))
+                        wait_queue.put(curr_process)
+                        curr_process = new_process
+                        process_start = run_time
+                    else:
+                        wait_queue.put(new_process)  # Back to gul... waiting queue now.
 
             curr_process.execute(process_start, 1, record=False)
             run_time += 1
