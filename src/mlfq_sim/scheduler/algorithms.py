@@ -18,7 +18,7 @@ def sjf(processes):
 
 
 def srtf(processes):
-    return simulation_schedule(processes, 'get_remaining_time', is_preemptive=True)
+    return simulation_schedule(processes, 'get_remaining_time', is_preemptive=True, high_number_prio=False)
 
 
 def non_preemptive(processes):
@@ -48,21 +48,34 @@ def sortably_schedule(processes, sort_criterion):
 
     return schedule
 
+
 def simulation_schedule(processes, priority_criterion, is_preemptive=False, high_number_prio=True):
     schedule = queue.Queue()
     proxy_processes = copy.deepcopy(processes)
 
     arrival_queue = ArrivalQueue()
-    wait_queue = WaitQueue(key=lambda process: -getattr(process, priority_criterion)())
 
+    # Here, we're negating the process priority criterion if we follow the higher number, higher priority
+    # scheme since priority queues sort ascendingly. Having a smaller priority criterion will make the
+    # wait queue put the item closer to the front of the queue. We negate the item's priority so that the
+    # items with a higher priority gets placed closer to the front. Essentially, we are exploiting the
+    # aforementioned behaviour of the queue. This would have been easier done, implementation-wise, if we
+    # utilized the low number, high priority scheme.
+    #
+    # On the other hand, if we want to follow a lower number, higher priority scheme (such is the case
+    # in the SRTF algorithm, where a process with a shorter burst time gets higher priority), there is no
+    # need to negate the priority criterion.
+    wait_queue = WaitQueue(
+        key=lambda process: (-getattr(process, priority_criterion)() if high_number_prio
+                             else getattr(process, priority_criterion)())
+    )
     # Populate the arrival queue.
     for proxy_process in proxy_processes:
         arrival_queue.put(proxy_process)
 
-    comparison_func = None
     if high_number_prio:
         comparison_func = _is_greater_than
-    else:
+    else:  # Sp we do the low number, higher priority thing that it is in SRTF.
         comparison_func = _is_less_than
 
     # Time to schedule.
@@ -129,7 +142,8 @@ def simulation_schedule(processes, priority_criterion, is_preemptive=False, high
                 waiting_process = None
 
             if new_process is not None and waiting_process is not None:
-                if getattr(new_process, priority_criterion)() > getattr(curr_process, priority_criterion)()():
+                if comparison_func(getattr(new_process, priority_criterion)(),
+                                   getattr(curr_process, priority_criterion)()()):
                     curr_process = new_process
                     wait_queue.put(waiting_process)
                 else:
