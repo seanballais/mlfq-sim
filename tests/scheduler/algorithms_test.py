@@ -31,6 +31,9 @@ class TestSchedulingAlgorithms:
     def test_sjf(self):
         self._test_algorithms(algorithms.sjf, [4, 1, 3, 0, 2])
 
+    def test_srtf(self):
+        self._test_algorithms(algorithms.srtf, [0, 1, 3, 4, 3, 0, 2])
+
     def test_non_preemptive(self):
         self._test_algorithms(algorithms.non_preemptive, [0, 2, 4, 1, 3])
 

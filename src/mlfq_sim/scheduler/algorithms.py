@@ -9,6 +9,30 @@ from mlfq_sim.ds.scheduling import WaitQueue
 from mlfq_sim.ds.scheduling import ArrivalQueue
 
 
+def fcfs(processes):
+    return sortably_schedule(processes, lambda process: process.get_arrival_time())
+
+
+def sjf(processes):
+    return sortably_schedule(processes, lambda process: process.get_burst_time())
+
+
+def srtf(processes):
+    return simulation_schedule(processes, 'get_remaining_time', is_preemptive=True)
+
+
+def non_preemptive(processes):
+    return simulation_schedule(processes, 'get_priority')
+
+
+def preemptive(processes):
+    return simulation_schedule(processes, 'get_priority', is_preemptive=True)
+
+
+def round_robin(processes):
+    pass
+
+
 def sortably_schedule(processes, sort_criterion):
     schedule = queue.Queue()
     proxy_processes = copy.deepcopy(processes)
@@ -24,7 +48,7 @@ def sortably_schedule(processes, sort_criterion):
 
     return schedule
 
-def simulation_schedule(processes, priority_criterion, is_preemptive=False):
+def simulation_schedule(processes, priority_criterion, is_preemptive=False, high_number_prio=True):
     schedule = queue.Queue()
     proxy_processes = copy.deepcopy(processes)
 
@@ -34,6 +58,12 @@ def simulation_schedule(processes, priority_criterion, is_preemptive=False):
     # Populate the arrival queue.
     for proxy_process in proxy_processes:
         arrival_queue.put(proxy_process)
+
+    comparison_func = None
+    if high_number_prio:
+        comparison_func = _is_greater_than
+    else:
+        comparison_func = _is_less_than
 
     # Time to schedule.
     run_time = 0
@@ -59,7 +89,8 @@ def simulation_schedule(processes, priority_criterion, is_preemptive=False):
                     # New process should preempt the current process since it has
                     # a higher priority.
                     if new_process is not None:
-                        if getattr(new_process, priority_criterion)() > getattr(curr_process, priority_criterion)():
+                        if comparison_func(getattr(new_process, priority_criterion)(),
+                                           getattr(curr_process, priority_criterion)()):
                             schedule.put(ScheduleItem(curr_process.get_pid(),
                                                       process_start,
                                                       run_time - process_start))
@@ -114,20 +145,15 @@ def simulation_schedule(processes, priority_criterion, is_preemptive=False):
 
     return schedule
 
-def fcfs(processes):
-    return sortably_schedule(processes, lambda process: process.get_arrival_time())
 
-def sjf(processes):
-    return sortably_schedule(processes, lambda process: process.get_burst_time())
+def _is_greater_than(a, b):
+    if a > b:
+        return True
 
-def srtf(processes):
-    pass
+    return False
 
-def non_preemptive(processes):
-    return simulation_schedule(processes, 'get_priority')
+def _is_less_than(a, b):
+    if a < b:
+        return True
 
-def preemptive(processes):
-    return simulation_schedule(processes, 'get_priority', is_preemptive=True)
-
-def round_robin(processes):
-    pass
+    return False
