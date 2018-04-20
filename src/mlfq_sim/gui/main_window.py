@@ -8,7 +8,16 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+from mlfq_sim.ds import ProcessControlBlock
+from mlfq_sim.ds.scheduling import MLFQQueue
+from mlfq_sim.scheduler import algorithms
+
+
 class Ui_AppWindow(object):
+    def __init__(self):
+        self.processes = {}
+        self.mlfq_queue = MLFQQueue()
+
     def setupUi(self, AppWindow):
         AppWindow.setObjectName("AppWindow")
         AppWindow.resize(800, 600)
@@ -45,8 +54,15 @@ class Ui_AppWindow(object):
             'Round Robin'
         ))
         self.processSettingsLayout.addWidget(self.schedulingAlgorithmSelection)
+        self.quantaLabel = QtWidgets.QLabel(self.verticalLayoutWidget)
+        self.quantaLabel.setObjectName("quantaLabel")
+        self.processSettingsLayout.addWidget(self.quantaLabel)
+        self.quantaTimeTextbox = QtWidgets.QLineEdit(self.verticalLayoutWidget)
+        self.quantaTimeTextbox.setObjectName("quantaTimeTextbox")
+        self.processSettingsLayout.addWidget(self.quantaTimeTextbox)
         self.scheduleButton = QtWidgets.QPushButton(self.verticalLayoutWidget)
         self.scheduleButton.setObjectName("scheduleButton")
+        self.scheduleButton.clicked.connect(self.scheduleProcesses)
         self.processSettingsLayout.addWidget(self.scheduleButton)
         self.additionTitle = QtWidgets.QLabel(self.verticalLayoutWidget)
         font = QtGui.QFont()
@@ -81,6 +97,7 @@ class Ui_AppWindow(object):
         self.processSettingsLayout.addWidget(self.priorityTextbox)
         self.addNewProcessButton = QtWidgets.QPushButton(self.verticalLayoutWidget)
         self.addNewProcessButton.setObjectName("addNewProcessButton")
+        self.addNewProcessButton.clicked.connect(self.addProcessToList)
         self.processSettingsLayout.addWidget(self.addNewProcessButton)
         self.deleteProcessLabel = QtWidgets.QLabel(self.verticalLayoutWidget)
         font = QtGui.QFont()
@@ -97,6 +114,7 @@ class Ui_AppWindow(object):
         self.processSettingsLayout.addWidget(self.deletePIDTextbox)
         self.deleteProcessButton = QtWidgets.QPushButton(self.verticalLayoutWidget)
         self.deleteProcessButton.setObjectName("deleteProcessButton")
+        self.deleteProcessButton.clicked.connect(self.deleteProcess)
         self.processSettingsLayout.addWidget(self.deleteProcessButton)
         self.processLayout.addLayout(self.processSettingsLayout)
         self.horizontalLayoutWidget = QtWidgets.QWidget(self.centralWidget)
@@ -148,6 +166,7 @@ class Ui_AppWindow(object):
         _translate = QtCore.QCoreApplication.translate
         AppWindow.setWindowTitle(_translate("AppWindow", "Multi-Level Feedback Queue Simulator"))
         self.scheduleProcessesLabel.setText(_translate("AppWindow", "Schedule Processes"))
+        self.quantaLabel.setText(_translate("AppWindow", "Quanta"))
         self.scheduleButton.setText(_translate("AppWindow", "Schedule Processes"))
         self.additionTitle.setText(_translate("AppWindow", "Add A New Process"))
         self.processIDLabel.setText(_translate("AppWindow", "Process ID"))
@@ -160,4 +179,71 @@ class Ui_AppWindow(object):
         self.deleteProcessButton.setText(_translate("AppWindow", "Delete process"))
         self.chartHolder.setText(_translate("AppWindow", "The schedule of your processes will appear here."))
         self.processTableLabel.setText(_translate("AppWindow", "Processes"))
+
+    def addProcessToList(self):
+        pid = self.processIDTextbox.text()
+        arrival_time = self.arrivalTimeTextbox.text()
+        burst_time = self.burstTimeTextbox.text()
+        priority = self.priorityTextbox.text()
+
+        num_rows = self.processTable.rowCount()
+        self.processes[int(pid)] = num_rows
+        self.mlfq_queue.add_process(ProcessControlBlock(int(pid),
+                                                        int(arrival_time),
+                                                        int(burst_time),
+                                                        int(priority)))
+        self.processTable.insertRow(num_rows)
+        self.processTable.setItem(
+            num_rows,
+            0,
+            QtWidgets.QTableWidgetItem(pid)
+        )
+        self.processTable.setItem(
+            num_rows,
+            1,
+            QtWidgets.QTableWidgetItem(arrival_time)
+        )
+        self.processTable.setItem(
+            num_rows,
+            2,
+            QtWidgets.QTableWidgetItem(burst_time)
+        )
+        self.processTable.setItem(
+            num_rows,
+            3,
+            QtWidgets.QTableWidgetItem(priority)
+        )
+
+    def deleteProcess(self):
+        pid = self.deletePIDTextbox.text()
+        self.mlfq_queue.remove_process(int(pid))
+        self.processTable.removeRow(self.processes[int(pid)])
+        del self.processes[int(pid)]
+
+    def scheduleProcesses(self):
+        algorithm_text = self.schedulingAlgorithmSelection.currentText()
+        quanta = 0
+        if algorithm_text == 'First Come, First Serve':
+            self.mlfq_queue.set_scheduling_algorithm(algorithms.fcfs)
+        elif algorithm_text == 'Shortest Job First':
+            self.mlfq_queue.set_scheduling_algorithm(algorithms.sjf)
+        elif algorithm_text == 'Shortest Remaining Time First':
+            self.mlfq_queue.set_scheduling_algorithm(algorithms.srtf)
+        elif algorithm_text == 'Non-Preemtive Priority':
+            self.mlfq_queue.set_scheduling_algorithm(algorithms.non_preemptive)
+        elif algorithm_text == 'Pre-emptive Priority':
+            self.mlfq_queue.set_scheduling_algorithm(algorithms.preemptive)
+        elif algorithm_text == 'Round Robin':
+            self.mlfq_queue.set_scheduling_algorithm(algorithms.round_robin)
+            quanta = self.quantaTimeTextbox.text() or 5
+            quanta = int(quanta)
+
+        # Schedule time
+        if quanta > 0:
+            schedule = self.mlfq_queue.schedule(quanta)
+        else:
+            schedule = self.mlfq_queue.schedule()
+
+        # Prepare the Gantt Chart!
+        
 
