@@ -45,10 +45,14 @@ class MLFQQueue:
         self.scheduling_algorithm = algorithm
 
     def schedule_processes(self, quanta=0):
+        listed_processes = []
+        for key, value in self.processes.items():
+            listed_processes.append(value)
+
         if quanta > 0:
-            self.schedule = self.scheduling_algorithm(self.processes, quanta)
+            self.schedule = self.scheduling_algorithm(listed_processes, quanta)
         else:
-            self.schedule = self.scheduling_algorithm(self.processes)
+            self.schedule = self.scheduling_algorithm(listed_processes)
 
     def get_schedule(self):
         return self.schedule

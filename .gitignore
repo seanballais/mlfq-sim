@@ -43,3 +43,7 @@ MANIFEST
 
 # PyTest Temporary files
 .pytest_cache/*
+
+# Do not include generated files.
+schedule.png
+schedule.json

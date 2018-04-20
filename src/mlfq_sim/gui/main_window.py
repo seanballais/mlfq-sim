@@ -1,17 +1,13 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '/home/seanballais/Code/Throwaway/MLFQSimApp/MLFQSimApp/appwindow.ui'
-#
-# Created by: PyQt5 UI code generator 5.7
-#
-# WARNING! All changes made in this file will be lost!
+import json
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from mlfq_sim.ds import ProcessControlBlock
 from mlfq_sim.ds.scheduling import MLFQQueue
 from mlfq_sim.scheduler import algorithms
-
+from mlfq_sim.gui.vendor import gantt
 
 class Ui_AppWindow(object):
     def __init__(self):
@@ -240,10 +236,40 @@ class Ui_AppWindow(object):
 
         # Schedule time
         if quanta > 0:
-            schedule = self.mlfq_queue.schedule(quanta)
+            self.mlfq_queue.schedule_processes(quanta)
         else:
-            schedule = self.mlfq_queue.schedule()
+            self.mlfq_queue.schedule_processes()
+
+        schedule = self.mlfq_queue.get_schedule()
 
         # Prepare the Gantt Chart!
-        
+        chart_data = {}
+        chart_data['packages'] = []
+        chart_data['title'] = '{0} Process Scheduling'.format(algorithm_text)
+        chart_data['xlabel'] = 'Time (units)'
+
+        last_process = None
+        while not schedule.empty():
+            process_schedule = schedule.get()
+            last_process = process_schedule
+            chart_data['packages'].append(
+                {
+                    'label': "Process {0}".format(process_schedule.get_pid()),
+                    'start': process_schedule.get_start_time(),
+                    'end': process_schedule.get_end()
+                }
+            )
+
+        chart_data['xticks'] = list(range(last_process.get_end() + 1))
+
+        # Write the schedule JSON file.
+        with open('schedule.json', 'w+') as schedule_file:
+            json.dump(chart_data, schedule_file)
+
+        g = gantt.Gantt('schedule.json')
+        g.render()
+        g.save('schedule.png')
+
+        label_pixmap = QtGui.QPixmap('schedule.png')
+        self.chartHolder.setPixmap(label_pixmap)
 
