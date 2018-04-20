@@ -45,8 +45,8 @@ class Ui_AppWindow(object):
             'First Come, First Serve',
             'Shortest Job First',
             'Shortest Remaining Time First',
-            'Non-Preemtive Priority',
-            'Pre-emptive Priority',
+            'Non-Preemptive Priority',
+            'Preemptive Priority',
             'Round Robin'
         ))
         self.processSettingsLayout.addWidget(self.schedulingAlgorithmSelection)
@@ -130,6 +130,7 @@ class Ui_AppWindow(object):
         self.chartHolder.setGeometry(QtCore.QRect(2, 5, 501, 391))
         self.chartHolder.setAlignment(QtCore.Qt.AlignCenter)
         self.chartHolder.setObjectName("chartHolder")
+        self.chartHolder.setScaledContents(True)
         self.chartScrollArea.setWidget(self.scrollAreaWidgetContents)
         self.chartLayout.addWidget(self.chartScrollArea)
         self.layoutWidget = QtWidgets.QWidget(self.centralWidget)
@@ -225,9 +226,9 @@ class Ui_AppWindow(object):
             self.mlfq_queue.set_scheduling_algorithm(algorithms.sjf)
         elif algorithm_text == 'Shortest Remaining Time First':
             self.mlfq_queue.set_scheduling_algorithm(algorithms.srtf)
-        elif algorithm_text == 'Non-Preemtive Priority':
+        elif algorithm_text == 'Non-Preemptive Priority':
             self.mlfq_queue.set_scheduling_algorithm(algorithms.non_preemptive)
-        elif algorithm_text == 'Pre-emptive Priority':
+        elif algorithm_text == 'Preemptive Priority':
             self.mlfq_queue.set_scheduling_algorithm(algorithms.preemptive)
         elif algorithm_text == 'Round Robin':
             self.mlfq_queue.set_scheduling_algorithm(algorithms.round_robin)
@@ -249,22 +250,28 @@ class Ui_AppWindow(object):
         chart_data['xlabel'] = 'Time (units)'
 
         last_process = None
+        ctr = 0
         while not schedule.empty():
             process_schedule = schedule.get()
             last_process = process_schedule
             chart_data['packages'].append(
                 {
-                    'label': "Process {0}".format(process_schedule.get_pid()),
+                    'label': "Process {0} ({1})".format(process_schedule.get_pid(),
+                                                     ctr),
                     'start': process_schedule.get_start_time(),
                     'end': process_schedule.get_end()
                 }
             )
+
+            ctr += 1
 
         chart_data['xticks'] = list(range(last_process.get_end() + 1))
 
         # Write the schedule JSON file.
         with open('schedule.json', 'w+') as schedule_file:
             json.dump(chart_data, schedule_file)
+
+        self.chartHolder.setText('Loading schedule...')
 
         g = gantt.Gantt('schedule.json')
         g.render()
