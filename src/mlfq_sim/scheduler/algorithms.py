@@ -88,6 +88,9 @@ def _sortably_schedule(processes, sort_criterion):
     sorted_processes = sorted(proxy_processes,
                               key=sort_criterion)
     for process in sorted_processes:
+        if process_start < process.get_arrival_time():
+            process_start = process.get_arrival_time()
+
         schedule.put(ScheduleItem(process.get_pid(),
                                   process_start,
                                   process.get_burst_time()))
