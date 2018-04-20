@@ -24,6 +24,36 @@ class ScheduleItem:
         return self.start_time + self.length
 
 
+class MLFQQueue:
+    def __init__(self, processes=[], scheduling_algorithm=None):
+        self.processes = {}
+        for process in processes:
+            self.processes[process.get_pid()] = process
+
+        self.scheduling_algorithm = scheduling_algorithm
+        self.schedule = None
+
+    def add_process(self, process):
+        self.processes[process.get_pid()] = process
+
+    def remove_process(self, pid):
+        process = self.processes[pid]
+        del self.processes[pid]
+        return process
+
+    def set_scheduling_algorithm(self, algorithm):
+        self.scheduling_algorithm = algorithm
+
+    def schedule_processes(self, quanta=0):
+        if quanta > 0:
+            self.schedule = self.scheduling_algorithm(self.processes, quanta)
+        else:
+            self.schedule = self.scheduling_algorithm(self.processes)
+
+    def get_schedule(self):
+        return self.schedule
+
+
 class PeekableQueue(queue.Queue):
     def __init__(self, max_size=0):
         super().__init__(max_size)
