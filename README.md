@@ -9,7 +9,7 @@ A simulation of a Multi-Level Feedback Queue.
 The project is a simulation of an operating system process scheduling algorithm called a Multi-Level Feedback Queue. It basically schedules processes for the CPU with no a priori knowledge on when the processes arrive or how long they take to execute. The algorithm "learns" which processes should be run first and which should be skipped for a while.
 
 ## Getting Started
-**Latest release (v0.1.0dev) is available in the `master` branch.**
+Latest released version: v0.1.0dev
 
 ### Prerequisites
 We use Python 3 for this project. The project uses Python 3-specific features and syntax, making it incompatible with Python 2. This means that it won't run in Python 2. Besides, we're urged to upgrade to Python 3. New projects are asked to be developed using Python 3. As a news flash (if your are not aware), by 2020, Python 2 will no longer be supported. If you have not installed Python 3 yet, please install it before running this project.
