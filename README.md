@@ -1,22 +1,32 @@
 # mlfq-sim
 
-
 A simulation of a Multi-Level Feedback Queue.
 
+![A preview of the project](docs/preview.png)
 
 ## Description
 
 The project is a simulation of an operating system process scheduling algorithm called a Multi-Level Feedback Queue. It basically schedules processes for the CPU with no a priori knowledge on when the processes arrive or how long they take to execute. The algorithm "learns" which processes should be run first and which should be skipped for a while.
 
 ## Getting Started
-**NOTE: Current active branch for development is `feature-process`.**
+**Latest release (v0.1.0dev) is available in the `master` branch.**
 
 ### Prerequisites
 We use Python 3 for this project. The project uses Python 3-specific features and syntax, making it incompatible with Python 2. This means that it won't run in Python 2. Besides, we're urged to upgrade to Python 3. New projects are asked to be developed using Python 3. As a news flash (if your are not aware), by 2020, Python 2 will no longer be supported. If you have not installed Python 3 yet, please install it before running this project.
 
+The following libraries are used by this project and must be installed in your system prior to running the project.
+
+ * [PyQt 5](http://pyqt.sourceforge.net/Docs/PyQt5/installation.html)\*
+ * [matplotlib](https://matplotlib.org/users/installing.html)
+ * [numpy](https://www.scipy.org/scipylib/download.html)
+
+\* The necessary parts of the LGPL version of Qt 5 will be included when installing this package with `pip`.
+
+The libraries will be installed later as you follow along with this guide.
+
 For package management, we use `pip`. The project requirements are listed in `requirements.txt`. It is preferable that you create a virtual environment for this project before running it. This is to prevent poisoning your system libraries. We use `virtualenv` for that matter..
 
-Installating Python 3, `pip`, and `virtualenv` may differ from system to system.
+Installing Python 3, `pip`, and `virtualenv` may differ from system to system. It is not a requirement to install `virtualenv` for this project. However, to prevent library versioning issues with your other Python projects (if you have) and packages, we recommend installing `virtualenv`.
 
 * [Installing in Windows (using Chocolatey)](http://docs.python-guide.org/en/latest/starting/install3/win/)    
   We recommend using [Chocolatey](https://chocolatey.org/) to install Python 3 in Windows. Chocolatey installs `pip` along with Python 3.
@@ -54,7 +64,7 @@ Installating Python 3, `pip`, and `virtualenv` may differ from system to system.
 
 ### Setting It Up
 #### Creating a virtual environment
-At this point, we must create a `virtualenv` folder to store our virtual environment.
+At this point, we must create a `virtualenv` folder to store our virtual environment. If you choose not to install `virtualenv`, you may skip this section.
 
 * [Creating a virtual environment in Windows](http://programwithus.com/learn-to-code/Pip-and-virtualenv-on-Windows/)    
 
@@ -67,7 +77,8 @@ At this point, we must create a `virtualenv` folder to store our virtual environ
 * Creating a virtual environment in UNIX-based OSes (e.g. Linux, macOS, FreeBSD)
 
       $ cd /path/to/environment/directory
-      $ virtualenv venv -p /usr/bin/python3
+      $ virtualenv venv -p /usr/bin/python3  
+      # /usr/bin/python3 should be changed to the path of Python 3 in your system, if it differs.
 
       # Activate the environment
       $ source /path/to/venv/bin/activate
@@ -83,7 +94,7 @@ You may also use a GUI Git client, if you want to.
 
 
 #### Installing the packages
-**WARNING: At this point, you must have activated the virtual environment you have created with `virtualenv`. If you don't, you will be installing packages globally, which is [not good](https://realpython.com/python-virtual-environments-a-primer/#why-the-need-for-virtual-environments).**
+**WARNING: If you didn't install and use `virtualenv`, you will be installing packages globally, which is [not good](https://realpython.com/python-virtual-environments-a-primer/#why-the-need-for-virtual-environments), and may lead to library versioning issues with other Python applications and packages.**
 
 The repo contains a `requirements.txt` file. This contains a listing of all the packages the project needs. Make sure those packages are installed so that we will be able to run our project. We will use `pip` to install the packages.
 
@@ -94,30 +105,52 @@ If all things went well, we should have all the packages we need to run the proj
 
 
 #### Running the project
-With all those preparations, what we can do now is just run a few tests! Yey, tests! The project is incomplete at the moment so tests will only be the ones that we will be able to run.
 
-Before we can run the tests, we must setup the project's environment. This is different from installing the packages. We will be installing the project itself to your system (or the virtual environment) but still will allow us to make changes to the project's code. This should only be done once.
+Before we can use the project or run tests, we must setup the project's environment. This is different from installing the packages. This will install the project itself to your system (or the virtual environment) but still will allow us to make changes to the project's code. This is usually only done once.
 
     $ python3 setup.py develop # or python
 
-To run the tests, we just type the following commands.
+After performing that, we may now proceed to running the project itself or the tests.
+
+##### Running the project
+
+To run the project, we just type the following command.
+
+    $ python3 src/mlfq_sim/App.py # or python
+
+This will open the application itself.
+
+##### Running the tests
+
+To run the tests, we just type the following command.
 
     $ python3 setup.py tests
 
 The output displayed will contain information whether or not the tests are succeeding.
 
+And we're done! :D Please enjoy playing around with the simulator.
+
 ## Contributing
-Eyyy, not yet allowed. Sorry!
+Eyyy, not allowed yet. Sorry!
 
 ## Versioning
 We use [SemVer](https://semver.org/) for versioning.
 
 ## Authors
 * Sean Francis N. Ballais - [Website](https://seanballais.github.io) | [Twitter](https://twitter.com/seanballais) | [CV](https://seanballais.github.io/CV.pdf)
-* Warren Kenn H. Pulma - [Twitter]()https://twitter.com/pulmaats
+* Warren Kenn H. Pulma - [Twitter](https://twitter.com/pulmaats)
 
 ## License
 This project is licensed under the [MIT License](LICENSE.txt).
 
+## Credits
+The project uses the free version of [PyQt](https://riverbankcomputing.com/software/pyqt/intro) 5 and open source version of [Qt](https://www.qt.io/) 5 for the GUI component. They are licensed under [GPLv3](https://riverbankcomputing.com/commercial/pyqt) and [LGPLv3 (with some parts under GPLv3)](https://doc.qt.io/qt-5.10/licensing.html), respectively.
+
+This project uses [gantt](https://github.com/stefanSchinkel/gantt) by [Stefan Schinkel](http://dreeg.org/) to generate Gantt charts. The `gantt` project uses `matplotlib` and `numpy` which are licensed under a [custom license](http://matplotlib.org/users/license.html) derived from the [PSF license](https://docs.python.org/3/license.html) and BSD-new license, respectively.
+
+The project uses [pytest](https://pytest.org) for writing and running tests. pytest is licensed under the [MIT](https://docs.pytest.org/en/latest/license.html) license.
+
+The project also used [PyScaffold](https://pyscaffold.org/en/latest/) to auto-generate the project structure. PyScaffold is licensed under the [MIT license](https://pyscaffold.org/en/latest/license.html).
+
 ## Acknowledgements
-* Thanks to Mr. Victor M. Romero II for teaching us Operating System Concepts. Now, I can't stop viewing scheduling problems in normal situations as CS problems (Sean).
+* Thanks to Mr. Victor M. Romero II for teaching us Operating System Concepts. Now, I can't stop viewing scheduling problems in normal situations as CS problems. -Sean *(ew, pabibo)*

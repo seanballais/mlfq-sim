@@ -2,6 +2,9 @@
 # pylint: disable=R0902, R0903
 """
 Gantt.py is a simple class to render Gantt charts, as commonly used in
+
+Original project by Stefan Schinkel.
+Project Repo: https://github.com/stefanSchinkel/gantt
 """
 
 import json
