@@ -279,7 +279,7 @@ class Ui_AppWindow(object):
             self.errorMessageBox.show()
             self.deletePIDTextbox.setFocus()
             return
-        elif pid not in self.processes:
+        elif int(pid) not in self.processes:
             self.errorMessageBox.setText('Process with the ID {0} does not exist.'.format(pid))
             self.errorMessageBox.show()
             self.deletePIDTextbox.setFocus()

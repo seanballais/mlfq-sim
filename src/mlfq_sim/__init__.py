@@ -1,1 +1,1 @@
-__version__ = '0.0.0dev'  # We will replace this when we use a version manager, if we will.
+__version__ = '0.1.1dev'  # We will replace this when we use a version manager, if we will.
