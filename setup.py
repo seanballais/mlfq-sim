@@ -16,7 +16,7 @@ entry_points = """
 [console_scripts]
 # script_name = mlfq_sim.module:function
 # For example:
-app = mlfq_sim.MLFQSimApp:run
+app = mlfq_sim.App:run
 """
 
 
@@ -24,7 +24,7 @@ def setup_package():
     needs_sphinx = {'build_sphinx', 'upload_docs'}.intersection(sys.argv)
     sphinx = ['sphinx'] if needs_sphinx else []
     setup(setup_requires=['pyscaffold>=3.0a0,<3.1a0'] + sphinx,
-          version='0.0.0dev',
+          version='0.1.0dev',
           entry_points=entry_points,
           use_pyscaffold=True)
 
