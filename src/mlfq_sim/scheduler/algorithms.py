@@ -132,80 +132,65 @@ def _priority_based_schedule(processes, priority_criterion, is_preemptive=False,
 
     # Time to schedule.
     run_time = 0
-    process_start = 0
     curr_process = arrival_queue.get_process(run_time)
-    while not arrival_queue.empty() or not wait_queue.empty() or curr_process is not None:
-        if curr_process is not None:
-            new_process = arrival_queue.get_process(run_time)
-            if new_process is not None:
-                # This means that there is a process that has arrived while there
-                # is process currently running. We also better check if there are
-                # more processes that arrived.
-                while new_process is not None:
-                    wait_queue.put(new_process)
-                    new_process = arrival_queue.get_process(run_time)
-
-                if is_preemptive:
-                    if not wait_queue.empty():
-                        new_process = wait_queue.get()
-
-                    # New process should preempt the current process since it has
-                    # a higher priority.
-                    if new_process is not None:
-                        if comparison_func(getattr(new_process, priority_criterion)(),
-                                           getattr(curr_process, priority_criterion)()):
-                            schedule.put(ScheduleItem(curr_process.get_pid(),
-                                                      process_start,
-                                                      run_time - process_start))
-                            wait_queue.put(curr_process)
-                            curr_process = new_process
-                            process_start = run_time
-                        else:
-                            # Back to gul... waiting queue now.
-                            wait_queue.put(new_process)
-
-            curr_process.execute(process_start, 1, record=False)
-            run_time += 1
-            if curr_process.get_remaining_time() == 0:
-                schedule.put(ScheduleItem(curr_process.get_pid(),
-                                          process_start,
-                                          run_time - process_start))
-
-                # We can safely get from the wait queue since at this point,
-                # any newly arrived processes have been placed in the
-                # wait queue.
-                if not wait_queue.empty():
-                    # This goes to an infinite loop if we don't check the queue's size.
-                    # We should investigate this. Sean, investigate it.
-                    curr_process = wait_queue.get()
-                else:
-                    curr_process = None
-
-                process_start = run_time
-        else:
-            # There is no currently running process.
-            # Let's check the arrival queue first.
-            new_process = arrival_queue.get_process(run_time)
+    while not arrival_queue.empty() or not wait_queue.empty():
+        if curr_process is None:
+            newly_arrived_process = arrival_queue.get_process(run_time)
             if not wait_queue.empty():
                 waiting_process = wait_queue.get()
             else:
                 waiting_process = None
 
-            if new_process is not None and waiting_process is not None:
-                if comparison_func(getattr(new_process, priority_criterion)(),
-                                   getattr(curr_process, priority_criterion)()()):
-                    curr_process = new_process
+            if newly_arrived_process is not None and waiting_process is not None:
+                if comparison_func(getattr(newly_arrived_process, priority_criterion)(),
+                                   getattr(waiting_process, priority_criterion)()):
+                    # We will use the newly arrived process.
+                    curr_process = newly_arrived_process
                     wait_queue.put(waiting_process)
                 else:
-                    # We give higher precedence to those waiting in
-                    # the queue if they have the same priority
-                    # to prevent starvation.
+                    # We will use the waiting process.
                     curr_process = waiting_process
-                    wait_queue.put(new_process)
+                    wait_queue.put(newly_arrived_process)
+            elif waiting_process is not None and newly_arrived_process is None:
+                curr_process = waiting_process
+            elif newly_arrived_process is not None and waiting_process is None:
+                curr_process = newly_arrived_process
+            else:
+                curr_process = None
+                run_time += 1
+                continue
 
-                process_start = run_time
+        process_start = curr_process.get_arrival_time()
+        while curr_process.get_remaining_time() > 0:
+            newly_arrived_process = arrival_queue.get_process(run_time)
+            if newly_arrived_process is not None:
+                if is_preemptive:
+                    if comparison_func(getattr(curr_process, priority_criterion)(),
+                                       getattr(newly_arrived_process, priority_criterion)()):
+                        # We will still use the current process since it has higher priority.
+                        # So better put the newly arrived process to the wait queue.
+                        wait_queue.put(newly_arrived_process)
+                    else:
+                        # Pre-empt the current process.
+                        schedule.put(ScheduleItem(curr_process.get_pid(),
+                                                  process_start,
+                                                  run_time - process_start))
+                        wait_queue.put(curr_process)
+                        curr_process = newly_arrived_process
+                        process_start = run_time
+                else:
+                    # Since we are not pre-empting processes, we're just gonna put it
+                    # in the wait queue.
+                    wait_queue.put(newly_arrived_process)
 
+            # Well, execute current process.
+            curr_process.execute(process_start, 1, record=False)
             run_time += 1
+
+        schedule.put(ScheduleItem(curr_process.get_pid(),
+                                  process_start,
+                                  run_time - process_start))
+        curr_process = None
 
     return schedule
 
@@ -215,6 +200,7 @@ def _is_greater_than(a, b):
         return True
 
     return False
+
 
 def _is_less_than(a, b):
     if a < b:
