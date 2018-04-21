@@ -58,6 +58,10 @@ class MLFQQueue:
         return self.schedule
 
 
+    def empty(self):
+        return len(self.processes) == 0
+
+
 class PeekableQueue(queue.Queue):
     def __init__(self, max_size=0):
         super().__init__(max_size)

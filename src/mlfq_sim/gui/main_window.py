@@ -2,7 +2,9 @@
 
 import json
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore
+from PyQt5 import QtGui
+from PyQt5 import QtWidgets
 
 from mlfq_sim.ds import ProcessControlBlock
 from mlfq_sim.ds.scheduling import MLFQQueue
@@ -156,6 +158,12 @@ class Ui_AppWindow(object):
         self.processTableLayout.addWidget(self.processTable)
         AppWindow.setCentralWidget(self.centralWidget)
 
+        self.errorMessageBox = QtWidgets.QMessageBox()
+        self.errorMessageBox.setWindowTitle(
+            'Multi-Level Feedback Queue Simulator - Error')
+        self.errorMessageBox.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        self.errorMessageBox.setIcon(QtWidgets.QMessageBox.Critical)
+
         self.retranslateUi(AppWindow)
         QtCore.QMetaObject.connectSlotsByName(AppWindow)
 
@@ -163,7 +171,7 @@ class Ui_AppWindow(object):
         _translate = QtCore.QCoreApplication.translate
         AppWindow.setWindowTitle(_translate("AppWindow", "Multi-Level Feedback Queue Simulator"))
         self.scheduleProcessesLabel.setText(_translate("AppWindow", "Schedule Processes"))
-        self.quantaLabel.setText(_translate("AppWindow", "Quanta"))
+        self.quantaLabel.setText(_translate("AppWindow", "Quanta (default: 5)"))
         self.scheduleButton.setText(_translate("AppWindow", "Schedule Processes"))
         self.additionTitle.setText(_translate("AppWindow", "Add A New Process"))
         self.processIDLabel.setText(_translate("AppWindow", "Process ID"))
@@ -182,6 +190,51 @@ class Ui_AppWindow(object):
         arrival_time = self.arrivalTimeTextbox.text()
         burst_time = self.burstTimeTextbox.text()
         priority = self.priorityTextbox.text()
+
+        # Input validation.
+        if pid == '':
+            self.errorMessageBox.setText('Cannot add process. Process ID field is empty')
+            self.errorMessageBox.show()
+            self.processIDTextbox.setFocus()
+            return
+        elif int(pid) in self.processes:
+            self.errorMessageBox.setText('Cannot add process. Another process already uses ID {0}'.format(pid))
+            self.errorMessageBox.show()
+            self.processIDTextbox.setFocus()
+            return
+        elif int(pid) < 0:
+            self.errorMessageBox.setText('Cannot add process. Process ID cannot be less than 0.')
+            self.errorMessageBox.show()
+            self.processIDTextbox.setFocus()
+            return
+
+        if arrival_time == '':
+            self.errorMessageBox.setText('Cannot add process. Arrival Time field is empty')
+            self.errorMessageBox.show()
+            self.arrivalTimeTextbox.setFocus()
+            return
+        elif int(arrival_time) < 0:
+            self.errorMessageBox.setText('Cannot add process. Arrival time cannot be less than 0.')
+            self.errorMessageBox.show()
+            self.arrivalTimeTextbox.setFocus()
+            return
+
+        if burst_time == '':
+            self.errorMessageBox.setText('Cannot add process. Burst Time field is empty')
+            self.errorMessageBox.show()
+            self.burstTimeTextbox.setFocus()
+            return
+        elif int(burst_time) < 0:
+            self.errorMessageBox.setText('Cannot add process. Burst Time cannot be less than 0.')
+            self.errorMessageBox.show()
+            self.burstTimeTextbox.setFocus()
+            return
+
+        if priority == '':
+            self.errorMessageBox.setText('Priority field is empty')
+            self.errorMessageBox.show()
+            self.priorityTextbox.setFocus()
+            return
 
         num_rows = self.processTable.rowCount()
         self.processes[int(pid)] = num_rows
@@ -211,13 +264,38 @@ class Ui_AppWindow(object):
             QtWidgets.QTableWidgetItem(priority)
         )
 
+        self.processIDTextbox.setFocus()
+
     def deleteProcess(self):
         pid = self.deletePIDTextbox.text()
+
+        if pid == '':
+            self.errorMessageBox.setText('Unable to perform deletion. No process ID specified.'.format(pid))
+            self.errorMessageBox.show()
+            self.deletePIDTextbox.setFocus()
+            return
+        elif int(pid) < 0:
+            self.errorMessageBox.setText('Unable to perform deletion. Negatives IDs are not allowed.'.format(pid))
+            self.errorMessageBox.show()
+            self.deletePIDTextbox.setFocus()
+            return
+        elif pid not in self.processes:
+            self.errorMessageBox.setText('Process with the ID {0} does not exist.'.format(pid))
+            self.errorMessageBox.show()
+            self.deletePIDTextbox.setFocus()
+            return
+
         self.mlfq_queue.remove_process(int(pid))
         self.processTable.removeRow(self.processes[int(pid)])
         del self.processes[int(pid)]
+        self.deletePIDTextbox.setFocus()
 
     def scheduleProcesses(self):
+        if self.mlfq_queue.empty():
+            self.errorMessageBox.setText('There is nothing to schedule.')
+            self.errorMessageBox.show()
+            return
+
         algorithm_text = self.schedulingAlgorithmSelection.currentText()
         quanta = 0
         if algorithm_text == 'First Come, First Serve':
