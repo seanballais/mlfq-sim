@@ -160,7 +160,7 @@ def _priority_based_schedule(processes, priority_criterion, is_preemptive=False,
                 run_time += 1
                 continue
 
-        process_start = curr_process.get_arrival_time()
+        process_start = run_time
         while curr_process.get_remaining_time() > 0:
             newly_arrived_process = arrival_queue.get_process(run_time)
             if newly_arrived_process is not None:
