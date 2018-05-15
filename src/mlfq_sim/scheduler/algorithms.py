@@ -11,23 +11,23 @@ from mlfq_sim.ds.scheduling import PeekableQueue
 
 
 def fcfs(processes):
-    return _sortably_schedule(processes, lambda process: process.get_arrival_time())
+    return _simulate_schedule(processes, 'get_arrival_time', high_number_prio=False)
 
 
 def sjf(processes):
-    return _sortably_schedule(processes, lambda process: process.get_burst_time())
+    return _simulate_schedule(processes, 'get_burst_time', high_number_prio=False)
 
 
 def srtf(processes):
-    return _priority_based_schedule(processes, 'get_remaining_time', is_preemptive=True, high_number_prio=False)
+    return _simulate_schedule(processes, 'get_remaining_time', is_preemptive=True, high_number_prio=False)
 
 
 def non_preemptive(processes):
-    return _priority_based_schedule(processes, 'get_priority')
+    return _simulate_schedule(processes, 'get_priority')
 
 
 def preemptive(processes):
-    return _priority_based_schedule(processes, 'get_priority', is_preemptive=True)
+    return _simulate_schedule(processes, 'get_priority', is_preemptive=True)
 
 
 def round_robin(processes, quanta=5):
@@ -80,26 +80,7 @@ def round_robin(processes, quanta=5):
     return schedule
 
 
-def _sortably_schedule(processes, sort_criterion):
-    schedule = queue.Queue()
-    proxy_processes = copy.deepcopy(processes)
-
-    process_start = 0
-    sorted_processes = sorted(proxy_processes,
-                              key=sort_criterion)
-    for process in sorted_processes:
-        if process_start < process.get_arrival_time():
-            process_start = process.get_arrival_time()
-
-        schedule.put(ScheduleItem(process.get_pid(),
-                                  process_start,
-                                  process.get_burst_time()))
-        process_start += process.get_burst_time()
-
-    return schedule
-
-
-def _priority_based_schedule(processes, priority_criterion, is_preemptive=False, high_number_prio=True):
+def _simulate_schedule(processes, priority_criterion, is_preemptive=False, high_number_prio=True):
     schedule = queue.Queue()
     proxy_processes = copy.deepcopy(processes)
     proxy_processes = sorted(proxy_processes, key=lambda process: process.get_arrival_time())
