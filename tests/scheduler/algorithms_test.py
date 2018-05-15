@@ -20,7 +20,7 @@ class TestSchedulingAlgorithms:
         self._test_algorithms(algorithms.fcfs, [0, 1, 2, 3, 4])
 
     def test_sjf(self):
-        self._test_algorithms(algorithms.sjf, [4, 1, 3, 0, 2])
+        self._test_algorithms(algorithms.sjf, [0, 4, 1, 3, 2])
 
     def test_srtf(self):
         self._test_algorithms(algorithms.srtf, [0, 1, 3, 4, 3, 0, 2])
