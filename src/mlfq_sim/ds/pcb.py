@@ -22,11 +22,9 @@ class ProcessControlBlock:
         def get_end(self):
             return self.start_time + self.length
 
-
     class ExecutionRecordingException(Exception):
         def __init__(self, *args, **kwargs):
-           Exception.__init__(self, *args, **kwargs)
-
+            Exception.__init__(self, *args, **kwargs)
 
     def __init__(self, pid, arrival_time, burst_time, priority):
         self.pid = pid
@@ -63,35 +61,34 @@ class ProcessControlBlock:
 
     def execute(self, start_time, length, record=True):
         if self.remaining_time == 0:
-            raise self.ExecutionRecordingException('Cannot record execution period ' \
-                                                   'because the process has already' \
-                                                   ' completed execution.')
+            raise self.ExecutionRecordingException('Cannot record execution period '
+                                                   + 'because the process has already'
+                                                   + ' completed execution.')
 
-        if len(self.execution_history) > 0:
-            max_item_index = max(len(self.execution_history) - 1, 0)
-            recent_execution_item = self.execution_history[max_item_index]
-            recent_item_start = recent_execution_item.get_start()
-            recent_item_length = recent_execution_item.get_length()
+        num_execution_items = len(self.execution_history)
+        recent_item = None
+        increment_item = False
 
-            if (start_time <= recent_item_start  # Remember that we cannot run a process
-                                                 # in the past, only in the present.
-                or start_time < recent_item_start + recent_item_length  # We can start the process
-                                                                        # exactly right where we
-                                                                        # ended the process
-                                                                        # execution temporarily.
-                                                                        # Thus, we are allowing
-                                                                        # `start_time`` to be equal
-                                                                        # to `recent_item_start +
-                                                                        # recent_item_length`. That
-                                                                        # we are only using `<`
-                                                                        # instead of `<=`.
-                ):
-                raise self.ExecutionRecordingException('Cannot record an execution period that has' \
-                                                       ' occurred in the past, or in between ' \
-                                                       'a certain previous execution period of ' \
-                                                       'the process.')
+        if num_execution_items > 0:
+            max_item_index = max(num_execution_items - 1, 0)
+            recent_item = self.execution_history[max_item_index]
+            item_start = recent_item.get_start()
+            item_end = item_start + recent_item.get_length()
+            
+            if start_time <= item_start or start_time < item_end:
+                raise self.ExecutionRecordingException('Cannot record an execution period that has'
+                                                       + ' occurred in the past, or in between '
+                                                       + 'a certain previous execution period of '
+                                                       + 'the process.')
+            elif start_time == item_end:
+                increment_item = True
 
         self.remaining_time = max(self.remaining_time - length, 0)
         
         if record:
-            self.execution_history.append(self.ExecutionHistoryItem(start_time, length))
+            if increment_item:
+                # Meaning that the process was actually executed continuously.
+                # We gotta use the "consenting adults" philosophy here.
+                recent_item.length += length
+            else:
+                self.execution_history.append(self.ExecutionHistoryItem(start_time, length))

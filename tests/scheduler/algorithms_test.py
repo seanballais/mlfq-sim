@@ -17,28 +17,83 @@ class TestSchedulingAlgorithms:
                           ProcessControlBlock(4, 7, 1, 4)]
 
     def test_fcfs(self):
-        self._test_algorithms(algorithms.fcfs, [0, 1, 2, 3, 4])
+        self._test_algorithms(algorithms.fcfs, self.processes, [0, 1, 2, 3, 4])
+
+        processes = [ProcessControlBlock(0, 0, 3, 0),
+                     ProcessControlBlock(1, 10, 1, 3)]
+        self._test_algorithms(algorithms.fcfs, processes, [0, 1])
+
+        processes = [ProcessControlBlock(0, 0, 3, 10),
+                     ProcessControlBlock(1, 1, 5, 9),
+                     ProcessControlBlock(2, 3, 5, 8)]
+        self._test_algorithms(algorithms.fcfs, processes, [0, 1, 2])
+
+        processes = [ProcessControlBlock(0, 0, 3, 0)]
+        self._test_algorithms(algorithms.fcfs, processes, [0])
 
     def test_sjf(self):
-        self._test_algorithms(algorithms.sjf, [4, 1, 3, 0, 2])
+        self._test_algorithms(algorithms.sjf, self.processes, [0, 4, 1, 3, 2])
+
+        processes = [ProcessControlBlock(0, 0, 3, 0),
+                     ProcessControlBlock(1, 10, 1, 3)]
+        self._test_algorithms(algorithms.sjf, processes, [0, 1])
+
+        processes = [ProcessControlBlock(0, 0, 3, 0)]
+        self._test_algorithms(algorithms.sjf, processes, [0])
 
     def test_srtf(self):
-        self._test_algorithms(algorithms.srtf, [0, 1, 3, 4, 3, 0, 2])
+        self._test_algorithms(algorithms.srtf, self.processes, [0, 1, 3, 4, 3, 0, 2])
+
+        processes = [ProcessControlBlock(0, 0, 3, 0),
+                     ProcessControlBlock(1, 10, 1, 3)]
+        self._test_algorithms(algorithms.srtf, processes, [0, 1])
+
+        processes = [ProcessControlBlock(0, 0, 3, 0)]
+        self._test_algorithms(algorithms.srtf, processes, [0])
 
     def test_non_preemptive(self):
-        self._test_algorithms(algorithms.non_preemptive, [0, 2, 4, 1, 3])
+        self._test_algorithms(algorithms.non_preemptive, self.processes, [0, 2, 4, 1, 3])
+
+        processes = [ProcessControlBlock(0, 0, 3, 0),
+                     ProcessControlBlock(1, 10, 1, 3)]
+        self._test_algorithms(algorithms.non_preemptive, processes, [0, 1])
+
+        processes = [ProcessControlBlock(0, 0, 3, 0)]
+        self._test_algorithms(algorithms.non_preemptive, processes, [0])
 
     def test_preemptive(self):
-        self._test_algorithms(algorithms.preemptive, [0, 1, 2, 4, 1, 0, 3])
+        self._test_algorithms(algorithms.preemptive, self.processes, [0, 1, 2, 4, 1, 0, 3])
+
+        processes = [ProcessControlBlock(0, 0, 3, 0),
+                     ProcessControlBlock(1, 10, 1, 3)]
+        self._test_algorithms(algorithms.preemptive, processes, [0, 1])
+
+        processes = [ProcessControlBlock(0, 1, 3, 10),
+                     ProcessControlBlock(1, 2, 5, 9),
+                     ProcessControlBlock(2, 4, 5, 8)]
+        self._test_algorithms(algorithms.preemptive, processes, [0, 1, 2])
+
+        processes = [ProcessControlBlock(0, 0, 3, 0)]
+        self._test_algorithms(algorithms.preemptive, processes, [0])
 
     def test_round_robin(self):
-        self._test_algorithms(algorithms.round_robin, [0, 1, 2, 3, 4, 0, 2], 5)
+        self._test_algorithms(algorithms.round_robin, self.processes, [0, 1, 2, 3, 0, 4, 2], 5)
 
-    def _test_algorithms(self, algorithm, expected_pid_order, quanta=0):
+        # Test process scheduling with arrival time quite spread apart.
+        processes = [ProcessControlBlock(0, 0, 3, 0),
+                     ProcessControlBlock(1, 10, 1, 3)]
+        self._test_algorithms(algorithms.round_robin, processes, [0, 1])
+
+        # Test with only one process.
+        processes = [ProcessControlBlock(0, 0, 3, 0)]
+        self._test_algorithms(algorithms.round_robin, processes, [0])
+
+    @staticmethod
+    def _test_algorithms(algorithm, processes, expected_pid_order, quanta=0):
         if quanta > 0:
-            scheduled_processes = algorithm(self.processes, quanta)
+            scheduled_processes = algorithm(processes, quanta)
         else:
-            scheduled_processes = algorithm(self.processes)
+            scheduled_processes = algorithm(processes)
 
         assert scheduled_processes.qsize() == len(expected_pid_order)
 

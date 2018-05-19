@@ -1,5 +1,0 @@
-{
-  "tests/mlfq_sim/ds/pcb_test.py": true,
-  "tests/pkg/mlfq_sim_init_test.py::TestMLFQSimPkgInit::()::test_init_pkg_fail": true,
-  "tests/scheduler/algorithms_test.py::TestSchedulingAlgorithms::()::test_nonpreempt": true
-}
