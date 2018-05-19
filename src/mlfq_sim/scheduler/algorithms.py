@@ -7,7 +7,6 @@ import queue
 from mlfq_sim.ds.scheduling import ScheduleItem
 from mlfq_sim.ds.scheduling import WaitQueue
 from mlfq_sim.ds.scheduling import ArrivalQueue
-from mlfq_sim.ds.scheduling import PeekableQueue
 
 
 def fcfs(processes):
@@ -31,11 +30,13 @@ def preemptive(processes):
 
 
 def round_robin(processes, quanta=5):
+    # TODO: Get all processes with the same arrival time.
+    # Currently limited to one process where time unit.
     schedule = queue.Queue()
     proxy_processes = copy.deepcopy(processes)
     proxy_processes = sorted(proxy_processes, key=lambda process: process.get_arrival_time())
 
-    ready_queue = PeekableQueue()
+    ready_queue = queue.Queue()
     arrival_queue = ArrivalQueue()
 
     for proxy_process in proxy_processes:
@@ -83,6 +84,7 @@ def round_robin(processes, quanta=5):
 
 def _simulate_schedule(processes, priority_criterion, is_preemptive=False, high_number_prio=True):
     # TODO: Get all processes with the same arrival time.
+    # Currently limited to one process where time unit.
     schedule = queue.Queue()
     proxy_processes = copy.deepcopy(processes)
     proxy_processes = sorted(proxy_processes, key=lambda process: process.get_arrival_time())

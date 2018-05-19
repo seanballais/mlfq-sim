@@ -11,7 +11,6 @@
   "tests/ds/scheduling_test.py::TestScheduleItem::()::test_start_time",
   "tests/ds/scheduling_test.py::TestScheduleItem::()::test_length",
   "tests/ds/scheduling_test.py::TestScheduleItem::()::test_end",
-  "tests/ds/scheduling_test.py::TestPeekableQueue::()::test_empty_queue_peek",
   "tests/ds/scheduling_test.py::TestWaitQueue::()::test__get",
   "tests/ds/scheduling_test.py::TestArrivalQueue::()::test_get_process",
   "tests/scheduler/algorithms_test.py::TestSchedulingAlgorithms::()::test_fcfs",
