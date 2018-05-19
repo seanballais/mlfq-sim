@@ -136,7 +136,6 @@ def _simulate_schedule(processes, priority_criterion, is_preemptive=False, high_
             elif newly_arrived_process is not None and waiting_process is None:
                 curr_process = newly_arrived_process
             else:
-                curr_process = None
                 run_time += 1
                 continue
 
@@ -169,7 +168,6 @@ def _simulate_schedule(processes, priority_criterion, is_preemptive=False, high_
         schedule.put(ScheduleItem(curr_process.get_pid(),
                                   process_start,
                                   run_time - process_start))
-        curr_process = None
 
     return schedule
 
