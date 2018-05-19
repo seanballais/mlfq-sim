@@ -8,29 +8,23 @@ class ProcessControlBlock:
             self.start_time = start_time
             self.length = length
 
-
         def __repr__(self):
             return 'Execution History Item ' \
                    '(executed starting at {0} for {1} units)'.format(self.start_time,
                                                                      self.length)
 
-
         def get_start(self):
             return self.start_time
-
 
         def get_length(self):
             return self.length
 
-
         def get_end(self):
             return self.start_time + self.length
 
-
     class ExecutionRecordingException(Exception):
         def __init__(self, *args, **kwargs):
-           Exception.__init__(self, *args, **kwargs)
-
+            Exception.__init__(self, *args, **kwargs)
 
     def __init__(self, pid, arrival_time, burst_time, priority):
         self.pid = pid
@@ -40,7 +34,6 @@ class ProcessControlBlock:
         self.priority = priority
         self.execution_history = []
 
-
     def __repr__(self):
         return 'A Generic Process (pid {0})\t' \
                'Arrival: {1}\tBurst: {2}\tPriority: {3}'.format(self.pid,
@@ -48,30 +41,23 @@ class ProcessControlBlock:
                                                                 self.burst_time,
                                                                 self.priority)
 
-
     def get_pid(self):
         return self.pid
-
 
     def get_arrival_time(self):
         return self.arrival_time
 
-
     def get_burst_time(self):
         return self.burst_time
-
 
     def get_remaining_time(self):
         return self.remaining_time
 
-
     def get_priority(self):
         return self.priority
 
-
     def get_execution_history(self):
         return self.execution_history
-
 
     def execute(self, start_time, length, record=True):
         if self.remaining_time == 0:
@@ -80,6 +66,8 @@ class ProcessControlBlock:
                                                    + ' completed execution.')
 
         num_execution_items = len(self.execution_history)
+        recent_item = None
+        increment_item = False
 
         if num_execution_items > 0:
             max_item_index = max(num_execution_items - 1, 0)
@@ -93,14 +81,14 @@ class ProcessControlBlock:
                                                        + 'a certain previous execution period of '
                                                        + 'the process.')
             elif start_time == item_end:
-                # Meaning that the process was actually executed continuously.
-                # We gotta use the "consenting adults" philosophy here.
-                if record:
-                    recent_item.length += length
-
-                return
+                increment_item = True
 
         self.remaining_time = max(self.remaining_time - length, 0)
         
         if record:
-            self.execution_history.append(self.ExecutionHistoryItem(start_time, length))
+            if increment_item:
+                # Meaning that the process was actually executed continuously.
+                # We gotta use the "consenting adults" philosophy here.
+                recent_item.length += length
+            else:
+                self.execution_history.append(self.ExecutionHistoryItem(start_time, length))

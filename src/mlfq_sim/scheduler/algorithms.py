@@ -62,7 +62,7 @@ def round_robin(processes, quanta=5):
                 continue
 
         while quanta_counter < quanta and curr_process.get_remaining_time() > 0:
-            curr_process.execute(process_start, 1, record=False)
+            curr_process.execute(run_time, 1)
             run_time += 1
             quanta_counter += 1
 
@@ -123,8 +123,7 @@ def _simulate_schedule(processes, priority_criterion, is_preemptive=False, high_
                 waiting_process = None
 
             if newly_arrived_process is not None and waiting_process is not None:
-                if comparison_func(getattr(newly_arrived_process, priority_criterion)(),
-                                   getattr(waiting_process, priority_criterion)()):
+                if comparison_func(getattr(newly_arrived_process, priority_criterion)(), getattr(waiting_process, priority_criterion)()):
                     # We will use the newly arrived process.
                     curr_process = newly_arrived_process
                     wait_queue.put(waiting_process)
@@ -146,8 +145,7 @@ def _simulate_schedule(processes, priority_criterion, is_preemptive=False, high_
             newly_arrived_process = arrival_queue.get_process(run_time)
             if newly_arrived_process is not None:
                 if is_preemptive:
-                    if comparison_func(getattr(curr_process, priority_criterion)(),
-                                       getattr(newly_arrived_process, priority_criterion)()):
+                    if comparison_func(getattr(curr_process, priority_criterion)(), getattr(newly_arrived_process, priority_criterion)()):
                         # We will still use the current process since it has higher priority.
                         # So better put the newly arrived process to the wait queue.
                         wait_queue.put(newly_arrived_process)
@@ -165,7 +163,7 @@ def _simulate_schedule(processes, priority_criterion, is_preemptive=False, high_
                     wait_queue.put(newly_arrived_process)
 
             # Well, execute current process.
-            curr_process.execute(process_start, 1, record=False)
+            curr_process.execute(run_time, 1)
             run_time += 1
 
         schedule.put(ScheduleItem(curr_process.get_pid(),
