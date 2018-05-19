@@ -55,11 +55,6 @@ def round_robin(processes, quanta=5):
                 else:
                     run_time += 1
                     continue
-            else:
-                # No process for us yet. :(
-                # Let's move on for now.
-                run_time += 1
-                continue
 
         while quanta_counter < quanta and curr_process.get_remaining_time() > 0:
             curr_process.execute(run_time, 1)
