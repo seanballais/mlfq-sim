@@ -36,28 +36,34 @@ def round_robin(processes, quanta=5):
     proxy_processes = sorted(proxy_processes, key=lambda process: process.get_arrival_time())
 
     ready_queue = PeekableQueue()
+    arrival_queue = ArrivalQueue()
+
     for proxy_process in proxy_processes:
-        ready_queue.put(proxy_process)
+        arrival_queue.put(proxy_process)
 
     run_time = 0
-    process_start = 0
     quanta_counter = 0
-    curr_process = None
-    encountered_processes = set()
-    while not ready_queue.empty():
-        if curr_process is None:
-            if ready_queue.peek() is not None:
-                if (ready_queue.peek().get_arrival_time() <= run_time
-                   or ready_queue.peek().get_pid() in encountered_processes):
-                    curr_process = ready_queue.get()
-                    encountered_processes.add(curr_process.get_pid())
-                    process_start = run_time
-                else:
-                    run_time += 1
-                    continue
+    while not ready_queue.empty() or not arrival_queue.empty():
+        curr_process = arrival_queue.get_process(run_time)
 
+        if curr_process is None:
+            if not ready_queue.empty():
+                curr_process = ready_queue.get()
+            else:
+                run_time += 1
+                continue
+        else:
+            ready_queue.put(curr_process)
+            curr_process = ready_queue.get()
+
+        process_start = run_time
         while quanta_counter < quanta and curr_process.get_remaining_time() > 0:
             curr_process.execute(run_time, 1)
+
+            newly_arrived_process = arrival_queue.get_process(run_time)
+            if newly_arrived_process is not None:
+                ready_queue.put(newly_arrived_process)
+
             run_time += 1
             quanta_counter += 1
 
@@ -124,6 +130,9 @@ def _simulate_schedule(processes, priority_criterion, is_preemptive=False, high_
             else:
                 run_time += 1
                 continue
+        else:
+            wait_queue.put(curr_process)
+            curr_process = wait_queue.get()
 
         process_start = run_time
         while curr_process.get_remaining_time() > 0:

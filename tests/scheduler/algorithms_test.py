@@ -23,11 +23,11 @@ class TestSchedulingAlgorithms:
                      ProcessControlBlock(1, 10, 1, 3)]
         self._test_algorithms(algorithms.fcfs, processes, [0, 1])
 
-        """processes = [ProcessControlBlock(0, 0, 3, 10),
+        processes = [ProcessControlBlock(0, 0, 3, 10),
                      ProcessControlBlock(1, 1, 5, 9),
                      ProcessControlBlock(2, 3, 5, 8)]
         self._test_algorithms(algorithms.fcfs, processes, [0, 1, 2])
-        """
+
         processes = [ProcessControlBlock(0, 0, 3, 0)]
         self._test_algorithms(algorithms.fcfs, processes, [0])
 
@@ -67,17 +67,17 @@ class TestSchedulingAlgorithms:
         processes = [ProcessControlBlock(0, 0, 3, 0),
                      ProcessControlBlock(1, 10, 1, 3)]
         self._test_algorithms(algorithms.preemptive, processes, [0, 1])
-        """
+
         processes = [ProcessControlBlock(0, 1, 3, 10),
                      ProcessControlBlock(1, 2, 5, 9),
                      ProcessControlBlock(2, 4, 5, 8)]
         self._test_algorithms(algorithms.preemptive, processes, [0, 1, 2])
-        """
+
         processes = [ProcessControlBlock(0, 0, 3, 0)]
         self._test_algorithms(algorithms.preemptive, processes, [0])
 
     def test_round_robin(self):
-        self._test_algorithms(algorithms.round_robin, self.processes, [0, 1, 2, 3, 4, 0, 2], 5)
+        self._test_algorithms(algorithms.round_robin, self.processes, [0, 1, 2, 3, 0, 4, 2], 5)
 
         # Test process scheduling with arrival time quite spread apart.
         processes = [ProcessControlBlock(0, 0, 3, 0),
