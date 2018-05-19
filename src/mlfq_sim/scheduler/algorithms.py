@@ -76,6 +76,7 @@ def round_robin(processes, quanta=5):
 
 
 def _simulate_schedule(processes, priority_criterion, is_preemptive=False, high_number_prio=True):
+    # TODO: Get all processes with the same arrival time.
     schedule = queue.Queue()
     proxy_processes = copy.deepcopy(processes)
     proxy_processes = sorted(proxy_processes, key=lambda process: process.get_arrival_time())
@@ -111,25 +112,15 @@ def _simulate_schedule(processes, priority_criterion, is_preemptive=False, high_
     while not arrival_queue.empty() or not wait_queue.empty():
         curr_process = arrival_queue.get_process(run_time)
         if curr_process is None:
-            newly_arrived_process = arrival_queue.get_process(run_time)
             if not wait_queue.empty():
                 waiting_process = wait_queue.get()
             else:
                 waiting_process = None
 
-            if newly_arrived_process is not None and waiting_process is not None:
-                if comparison_func(getattr(newly_arrived_process, priority_criterion)(), getattr(waiting_process, priority_criterion)()):
-                    # We will use the newly arrived process.
-                    curr_process = newly_arrived_process
-                    wait_queue.put(waiting_process)
-                else:
-                    # We will use the waiting process.
-                    curr_process = waiting_process
-                    wait_queue.put(newly_arrived_process)
-            elif waiting_process is not None and newly_arrived_process is None:
+            # We are not checking if there is a newly arrived process since the newly arrived
+            # process will be captured in arrival_queue.
+            if waiting_process is not None:
                 curr_process = waiting_process
-            elif newly_arrived_process is not None and waiting_process is None:
-                curr_process = newly_arrived_process
             else:
                 run_time += 1
                 continue
@@ -139,7 +130,8 @@ def _simulate_schedule(processes, priority_criterion, is_preemptive=False, high_
             newly_arrived_process = arrival_queue.get_process(run_time)
             if newly_arrived_process is not None:
                 if is_preemptive:
-                    if comparison_func(getattr(curr_process, priority_criterion)(), getattr(newly_arrived_process, priority_criterion)()):
+                    if comparison_func(getattr(curr_process, priority_criterion)(),
+                                       getattr(newly_arrived_process, priority_criterion)()):
                         # We will still use the current process since it has higher priority.
                         # So better put the newly arrived process to the wait queue.
                         wait_queue.put(newly_arrived_process)
