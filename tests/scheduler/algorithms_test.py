@@ -42,6 +42,10 @@ class TestSchedulingAlgorithms:
                      ProcessControlBlock(1, 10, 1, 3)]
         self._test_algorithms(algorithms.round_robin, processes, [0, 1])
 
+        # Test with only one process.
+        processes = [ProcessControlBlock(0, 0, 3, 0)]
+        self._test_algorithms(algorithms.round_robin, processes, [0])
+
     def _test_algorithms(self, algorithm, processes, expected_pid_order, quanta=0):
         if quanta > 0:
             scheduled_processes = algorithm(processes, quanta)

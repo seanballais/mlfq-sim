@@ -113,8 +113,8 @@ def _simulate_schedule(processes, priority_criterion, is_preemptive=False, high_
 
     # Time to schedule.
     run_time = 0
-    curr_process = arrival_queue.get_process(run_time)
     while not arrival_queue.empty() or not wait_queue.empty():
+        curr_process = arrival_queue.get_process(run_time)
         if curr_process is None:
             newly_arrived_process = arrival_queue.get_process(run_time)
             if not wait_queue.empty():
