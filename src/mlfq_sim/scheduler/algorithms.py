@@ -76,18 +76,15 @@ def round_robin(processes, quanta=5):
             # Still got stuff to do.
             ready_queue.put(curr_process)
 
-        curr_process = None
         quanta_counter = 0
 
     return schedule
 
 
-def _simulate_schedule(processes, priority_criterion, is_preemptive=False, high_number_prio=True):
+def _simulate_schedule(processes, priority_criterion, time_allotment=0, is_preemptive=False, high_number_prio=True):
     # TODO: Get all processes with the same arrival time.
     # Currently limited to one process where time unit.
     schedule = queue.Queue()
-    proxy_processes = copy.deepcopy(processes)
-    proxy_processes = sorted(proxy_processes, key=lambda process: process.get_arrival_time())
 
     arrival_queue = ArrivalQueue()
 
@@ -102,13 +99,13 @@ def _simulate_schedule(processes, priority_criterion, is_preemptive=False, high_
     # in the SRTF algorithm, where a process with a shorter burst time gets higher priority), there is no
     # need to negate the priority criterion.
     wait_queue = WaitQueue(
-        key=lambda process: (-getattr(process, priority_criterion)() if high_number_prio
-                             else getattr(process, priority_criterion)())
+        key=lambda _process: (-getattr(_process, priority_criterion)() if high_number_prio
+                              else getattr(_process, priority_criterion)())
     )
 
     # Populate the arrival queue.
-    for proxy_process in proxy_processes:
-        arrival_queue.put(proxy_process)
+    for process in processes:
+        arrival_queue.put(process)
 
     if high_number_prio:
         comparison_func = _is_greater_than
@@ -117,7 +114,8 @@ def _simulate_schedule(processes, priority_criterion, is_preemptive=False, high_
 
     # Time to schedule.
     run_time = 0
-    while not arrival_queue.empty() or not wait_queue.empty():
+    remaining_time = time_allotment
+    while not arrival_queue.empty() or not wait_queue.empty() or remaining_time > 0:
         curr_process = arrival_queue.get_process(run_time)
         if curr_process is None:
             if not wait_queue.empty():
@@ -137,7 +135,7 @@ def _simulate_schedule(processes, priority_criterion, is_preemptive=False, high_
             curr_process = wait_queue.get()
 
         process_start = run_time
-        while curr_process.get_remaining_time() > 0:
+        while curr_process.get_remaining_time() > 0 or remaining_time > 0:
             newly_arrived_process = arrival_queue.get_process(run_time)
             if newly_arrived_process is not None:
                 if is_preemptive:
