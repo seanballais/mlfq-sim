@@ -1,53 +1,63 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import copy
 import queue
 
-from mlfq_sim.ds.scheduling import ScheduleItem
 from mlfq_sim.ds.scheduling import WaitQueue
 from mlfq_sim.ds.scheduling import ArrivalQueue
 
 
-def fcfs(processes, time_allotment=0):
-    return _simulate_schedule(processes, 'get_arrival_time', high_number_prio=False, time_allotment=time_allotment)
+def fcfs(processes, additional_processes=list(), time_allotment=0):
+    return _simulate_schedule(processes, 'get_arrival_time',
+                              additional_processes=additional_processes,
+                              high_number_prio=False, time_allotment=time_allotment)
 
 
-def sjf(processes, time_allotment=0):
-    return _simulate_schedule(processes, 'get_burst_time', high_number_prio=False, time_allotment=time_allotment)
+def sjf(processes, additional_processes=list(), time_allotment=0):
+    return _simulate_schedule(processes, 'get_burst_time',
+                              additional_processes=additional_processes,
+                              high_number_prio=False, time_allotment=time_allotment)
 
 
-def srtf(processes, time_allotment=0):
+def srtf(processes, additional_processes=list(), time_allotment=0):
     return _simulate_schedule(processes, 'get_remaining_time',
+                              additional_processes=additional_processes,
                               is_preemptive=True, high_number_prio=False, time_allotment=time_allotment)
 
 
-def non_preemptive(processes, time_allotment=0):
-    return _simulate_schedule(processes, 'get_priority', time_allotment=time_allotment)
+def non_preemptive(processes, additional_processes=list(), time_allotment=0):
+    return _simulate_schedule(processes, 'get_priority',
+                              additional_processes=additional_processes, time_allotment=time_allotment)
 
 
-def preemptive(processes, time_allotment=0):
-    return _simulate_schedule(processes, 'get_priority', is_preemptive=True, time_allotment=time_allotment)
+def preemptive(processes, additional_processes=list(), time_allotment=0):
+    return _simulate_schedule(processes, 'get_priority',
+                              additional_processes=additional_processes,
+                              is_preemptive=True, time_allotment=time_allotment)
 
 
-def round_robin(processes, quanta=5, time_allotment=0):
+def round_robin(processes, additional_processes=list(), quanta=5, time_allotment=0):
     # TODO: Get all processes with the same arrival time.
     # Currently limited to one process where time unit.
     schedule = queue.Queue()
-    proxy_processes = copy.deepcopy(processes)
-    proxy_processes = sorted(proxy_processes, key=lambda process: process.get_arrival_time())
 
     ready_queue = queue.Queue()
     arrival_queue = ArrivalQueue()
     promoted_processes = []
     demoted_processes = []
 
-    for proxy_process in proxy_processes:
-        arrival_queue.put(proxy_process)
+    for process in (processes + additional_processes):
+        arrival_queue.put(process)
 
     run_time = 0
     quanta_counter = 0
+    remaining_time = time_allotment
     while not ready_queue.empty() or not arrival_queue.empty():
+        if remaining_time <= 0 < time_allotment:
+            # Not adding remaining_time in the while condition since remaining_time only matters
+            # if there is a time_allotment set.
+            break
+
         curr_process = arrival_queue.get_process(run_time)
 
         if curr_process is None:
@@ -61,6 +71,11 @@ def round_robin(processes, quanta=5, time_allotment=0):
             curr_process = ready_queue.get()
 
         while quanta_counter < quanta and curr_process.get_remaining_time() > 0:
+            if remaining_time <= 0 < time_allotment:
+                # Not adding remaining_time in the while condition since remaining_time only matters
+                # if there is a time_allotment set.
+                break
+
             curr_process.execute(run_time, 1)
 
             newly_arrived_process = arrival_queue.get_process(run_time)
@@ -70,15 +85,23 @@ def round_robin(processes, quanta=5, time_allotment=0):
             run_time += 1
             quanta_counter += 1
 
-        schedule.put(curr_process.get_pid())
-
         if curr_process.get_remaining_time() > 0:
-            # Still got stuff to do.
-            ready_queue.put(curr_process)
+            if quanta_counter > 0:
+                promoted_processes.append(curr_process)
+            else:
+                demoted_processes.append(curr_process)
+
+        schedule.put(curr_process.get_pid())
 
         quanta_counter = 0
 
-    return schedule, _queue_to_list(arrival_queue), _queue_to_list(ready_queue), promoted_processes, demoted_processes
+    return (schedule,
+            _queue_to_list(arrival_queue),
+            _queue_to_list(ready_queue),
+            promoted_processes,
+            demoted_processes,
+            run_time
+            )
 
 
 def _simulate_schedule(processes, priority_criterion,
@@ -89,8 +112,10 @@ def _simulate_schedule(processes, priority_criterion,
 
     arrival_queue = ArrivalQueue()
     promoted_processes = []
-    demoted_processes = []  # Will always be empty unless you use round robin. Kept to provide consistency with the
-                            # round robin algorithm.
+
+    # `demoted_processes` will always be empty unless you use round robin. Kept to provide consistency with the
+    # round robin algorithm.
+    demoted_processes = []
 
     # Here, we're negating the process priority criterion if we follow the higher number, higher priority
     # scheme since priority queues sort ascendingly. Having a smaller priority criterion will make the
@@ -129,27 +154,21 @@ def _simulate_schedule(processes, priority_criterion,
             # if there is a time_allotment set.
             break
 
-        curr_process = arrival_queue.get_process(run_time)
-        if curr_process is None:
-            if not wait_queue.empty():
-                waiting_process = wait_queue.get()
-            else:
-                waiting_process = None
+        # Capture all processes arriving at the same time.
+        new_process = arrival_queue.get_process(run_time)
+        while new_process is not None:
+            new_process = arrival_queue.get_process(run_time)
+            wait_queue.put(new_process)
 
-            # We are not checking if there is a newly arrived process since the newly arrived
-            # process will be captured in arrival_queue.
-            if waiting_process is not None:
-                curr_process = waiting_process
-            else:
-                run_time += 1
-
-                if time_allotment > 0:
-                    remaining_time -= 1
-
-                continue
-        else:
-            wait_queue.put(curr_process)
+        if not wait_queue.empty():
             curr_process = wait_queue.get()
+        else:
+            run_time += 1
+
+            if time_allotment > 0:
+                remaining_time -= 1
+
+            continue
 
         while curr_process.get_remaining_time() > 0:
             if remaining_time <= 0 < time_allotment:
@@ -166,7 +185,7 @@ def _simulate_schedule(processes, priority_criterion,
                     else:
                         # Preempt the current process.
                         schedule.put(curr_process.get_pid())
-                        wait_queue.put(curr_process)
+                        promoted_processes.append(curr_process)
                         curr_process = newly_arrived_process
                 else:
                     # Since we are not preempting processes, we're just gonna put it
@@ -186,7 +205,13 @@ def _simulate_schedule(processes, priority_criterion,
 
         schedule.put(curr_process.get_pid())
 
-    return schedule, _queue_to_list(arrival_queue), _queue_to_list(wait_queue), promoted_processes, demoted_processes
+    return (schedule,
+            _queue_to_list(arrival_queue),
+            _queue_to_list(wait_queue),
+            promoted_processes,
+            demoted_processes,
+            run_time
+            )
 
 
 def _queue_to_list(q):

@@ -118,9 +118,9 @@ class TestSchedulingAlgorithms:
     @staticmethod
     def _test_algorithms(algorithm, processes, expected_pid_order, quanta=0, time_allotment=0):
         if quanta > 0:
-            scheduled_processes, _, _, _, _ = algorithm(processes, quanta, time_allotment=time_allotment)
+            scheduled_processes, _, _, _, _, _ = algorithm(processes, quanta, time_allotment=time_allotment)
         else:
-            scheduled_processes, _, _, _, _ = algorithm(processes, time_allotment=time_allotment)
+            scheduled_processes, _, _, _, _, _ = algorithm(processes, time_allotment=time_allotment)
 
         assert scheduled_processes.qsize() == len(expected_pid_order)
 
