@@ -28,6 +28,11 @@ class TestSchedulingAlgorithms:
         processes = [ProcessControlBlock(0, 0, 3, 0)]
         self._test_algorithms(algorithms.fcfs, processes, [0])
 
+        # Test with preemption.
+        processes = [ProcessControlBlock(0, 0, 3, 0),
+                     ProcessControlBlock(0, 1, 3, 0)]
+        self._test_algorithms(algorithms.fcfs, processes, [0], time_allotment=3)
+
     def test_sjf(self):
         processes = [ProcessControlBlock(0, 0, 8, 2),
                      ProcessControlBlock(1, 1, 4, 3),
@@ -111,15 +116,15 @@ class TestSchedulingAlgorithms:
         self._test_algorithms(algorithms.round_robin, processes, [0])
 
     @staticmethod
-    def _test_algorithms(algorithm, processes, expected_pid_order, quanta=0):
+    def _test_algorithms(algorithm, processes, expected_pid_order, quanta=0, time_allotment=0):
         if quanta > 0:
-            scheduled_processes = algorithm(processes, quanta)
+            scheduled_processes, _, _, _, _ = algorithm(processes, quanta, time_allotment=time_allotment)
         else:
-            scheduled_processes = algorithm(processes)
+            scheduled_processes, _, _, _, _ = algorithm(processes, time_allotment=time_allotment)
 
         assert scheduled_processes.qsize() == len(expected_pid_order)
 
         pid_index = 0
         while not scheduled_processes.empty():
-            assert scheduled_processes.get().get_pid() == expected_pid_order[pid_index]
+            assert scheduled_processes.get() == expected_pid_order[pid_index]
             pid_index += 1
