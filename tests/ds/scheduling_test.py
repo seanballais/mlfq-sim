@@ -41,7 +41,6 @@ class TestArrivalQueue:
     def setup_class(self):
         self.queue = ArrivalQueue()
 
-    
     def test_get_process(self):
         assert self.queue.get_process(0) == None
 

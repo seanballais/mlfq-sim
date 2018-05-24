@@ -1,130 +1,121 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import pytest
-
 from mlfq_sim.ds import ProcessControlBlock
 from mlfq_sim.scheduler import algorithms
 
 
 class TestSchedulingAlgorithms:
     def test_fcfs(self):
-        processes = [ProcessControlBlock(0, 0, 8, 2),
-                     ProcessControlBlock(1, 1, 4, 3),
-                     ProcessControlBlock(2, 2, 9, 5),
-                     ProcessControlBlock(3, 3, 5, 1),
-                     ProcessControlBlock(4, 7, 1, 4)]
-        self._test_algorithms(algorithms.fcfs, processes, [0, 1, 2, 3, 4])
+        # Test for case where there is no overlapping arrival times.
+        processes = [ProcessControlBlock(0, 0, 5, 0),
+                     ProcessControlBlock(1, 5, 5, 0)]
+        assert algorithms.fcfs(processes) == ([0, 1], [], [], [], [], 10)
 
-        processes = [ProcessControlBlock(0, 0, 3, 0),
-                     ProcessControlBlock(1, 10, 1, 3)]
-        self._test_algorithms(algorithms.fcfs, processes, [0, 1])
+        # Test for case where there is one overlapping arrival times.
+        processes = [ProcessControlBlock(0, 0, 5, 0),
+                     ProcessControlBlock(1, 3, 5, 0)]
+        assert algorithms.fcfs(processes) == ([0, 1], [], [], [], [], 10)
 
-        processes = [ProcessControlBlock(0, 0, 3, 10),
-                     ProcessControlBlock(1, 1, 5, 9),
-                     ProcessControlBlock(2, 3, 5, 8)]
-        self._test_algorithms(algorithms.fcfs, processes, [0, 1, 2])
+        # Test for case where there are same arrival times for two processes but no running process.
+        processes = [ProcessControlBlock(0, 0, 5, 0),
+                     ProcessControlBlock(1, 0, 5, 0)]
+        assert algorithms.fcfs(processes) == ([0, 1], [], [], [], [], 10)
 
-        processes = [ProcessControlBlock(0, 0, 3, 0)]
-        self._test_algorithms(algorithms.fcfs, processes, [0])
+        # Test for case where there are two processes that arrived at the same time while another process is running.
+        processes = [ProcessControlBlock(0, 0, 5, 0),
+                     ProcessControlBlock(1, 3, 5, 0),
+                     ProcessControlBlock(2, 3, 5, 0)]
+        assert algorithms.fcfs(processes) == ([0, 1, 2], [], [], [], [], 15)
 
-        # Test with preemption.
-        processes = [ProcessControlBlock(0, 0, 3, 0),
-                     ProcessControlBlock(0, 1, 3, 0)]
-        self._test_algorithms(algorithms.fcfs, processes, [0], time_allotment=3)
+        # Test for case where there is a gap between process arrivals.
+        processes = [ProcessControlBlock(0, 0, 5, 0),
+                     ProcessControlBlock(1, 10, 5, 0)]
+        assert algorithms.fcfs(processes) == ([0, 1], [], [], [], [], 15)
+
+        # Test for case where queue is preempted because the time slot was already filled up.
+        processes = [ProcessControlBlock(0, 0, 5, 0)]
+        resulting_process = ProcessControlBlock(0, 0, 5, 0)
+        resulting_process.execute(0, 2)
+        assert algorithms.fcfs(processes, time_allotment=2) == ([0], [], [], [resulting_process], [], 2)
+
+        # Test for case where queue is preempted even though there are still processes arriving.
+        processes = [ProcessControlBlock(0, 10, 5, 0)]
+        assert algorithms.fcfs(processes, time_allotment=5) == ([], [ProcessControlBlock(0, 10, 5, 0)], [], [], [], 5)
+
+        # Test for case where queue is preempted even though there are still processes waiting to have a first run.
+        processes = [ProcessControlBlock(0, 0, 5, 0),
+                     ProcessControlBlock(1, 1, 5, 0)]
+        promoted_process = ProcessControlBlock(0, 0, 5, 0)
+        promoted_process.execute(0, 2)
+        assert algorithms.fcfs(processes, time_allotment=2) == ([0],
+                                                                [],
+                                                                [ProcessControlBlock(1, 1, 5, 0)],
+                                                                [promoted_process],
+                                                                [],
+                                                                2)
+
+        # Test for case where another set of processes are added from another queue.
+        processes = [ProcessControlBlock(0, 0, 5, 0)]
+        additional_processes = [ProcessControlBlock(1, 1, 5, 0)]
+        assert algorithms.fcfs(processes, additional_processes) == ([0, 1], [], [], [], [], 10)
 
     def test_sjf(self):
-        processes = [ProcessControlBlock(0, 0, 8, 2),
-                     ProcessControlBlock(1, 1, 4, 3),
-                     ProcessControlBlock(2, 2, 9, 5),
-                     ProcessControlBlock(3, 3, 5, 1),
-                     ProcessControlBlock(4, 7, 1, 4)]
-        self._test_algorithms(algorithms.sjf, processes, [0, 4, 1, 3, 2])
-
-        processes = [ProcessControlBlock(0, 0, 3, 0),
-                     ProcessControlBlock(1, 10, 1, 3)]
-        self._test_algorithms(algorithms.sjf, processes, [0, 1])
-
-        processes = [ProcessControlBlock(0, 0, 3, 0)]
-        self._test_algorithms(algorithms.sjf, processes, [0])
+        # Test for case where there is no overlapping arrival times.
+        # Test for case where there is one overlapping arrival times.
+        # Test for case where there are same arrival times for two processes but no running process.
+        # Test for case where there are two processes that arrived at the same time while another process is running.
+        # Test for case where there is a gap between process arrivals.
+        # Test for case where queue is preempted because the time slot was already filled up.
+        # Test for case where queue is preempted even though there are still processes arriving.
+        # Test for case where queue is preempted even though there are still processes waiting to have a first run.
+        # Test for case where another set of processes are added from another queue.
+        pass
 
     def test_srtf(self):
-        processes = [ProcessControlBlock(0, 0, 8, 2),
-                     ProcessControlBlock(1, 1, 4, 3),
-                     ProcessControlBlock(2, 2, 9, 5),
-                     ProcessControlBlock(3, 3, 5, 1),
-                     ProcessControlBlock(4, 7, 1, 4)]
-        self._test_algorithms(algorithms.srtf, processes, [0, 1, 3, 4, 3, 0, 2])
-
-        processes = [ProcessControlBlock(0, 0, 3, 0),
-                     ProcessControlBlock(1, 10, 1, 3)]
-        self._test_algorithms(algorithms.srtf, processes, [0, 1])
-
-        processes = [ProcessControlBlock(0, 0, 3, 0)]
-        self._test_algorithms(algorithms.srtf, processes, [0])
+        # Test for case where there is no overlapping arrival times.
+        # Test for case where there is one overlapping arrival times.
+        # Test for case where there are same arrival times for two processes but no running process.
+        # Test for case where there are two processes that arrived at the same time while another process is running.
+        # Test for case where there is a gap between process arrivals.
+        # Test for case where queue is preempted because the time slot was already filled up.
+        # Test for case where queue is preempted even though there are still processes arriving.
+        # Test for case where queue is preempted even though there are still processes waiting to have a first run.
+        # Test for case where another set of processes are added from another queue.
+        pass
 
     def test_non_preemptive(self):
-        processes = [ProcessControlBlock(0, 0, 8, 2),
-                     ProcessControlBlock(1, 1, 4, 3),
-                     ProcessControlBlock(2, 2, 9, 5),
-                     ProcessControlBlock(3, 3, 5, 1),
-                     ProcessControlBlock(4, 7, 1, 4)]
-        self._test_algorithms(algorithms.non_preemptive, processes, [0, 2, 4, 1, 3])
-
-        processes = [ProcessControlBlock(0, 0, 3, 0),
-                     ProcessControlBlock(1, 10, 1, 3)]
-        self._test_algorithms(algorithms.non_preemptive, processes, [0, 1])
-
-        processes = [ProcessControlBlock(0, 0, 3, 0)]
-        self._test_algorithms(algorithms.non_preemptive, processes, [0])
+        # Test for case where there is no overlapping arrival times.
+        # Test for case where there is one overlapping arrival times.
+        # Test for case where there are same arrival times for two processes but no running process.
+        # Test for case where there are two processes that arrived at the same time while another process is running.
+        # Test for case where there is a gap between process arrivals.
+        # Test for case where queue is preempted because the time slot was already filled up.
+        # Test for case where queue is preempted even though there are still processes arriving.
+        # Test for case where queue is preempted even though there are still processes waiting to have a first run.
+        # Test for case where another set of processes are added from another queue.
+        pass
 
     def test_preemptive(self):
-        processes = [ProcessControlBlock(0, 0, 8, 2),
-                     ProcessControlBlock(1, 1, 4, 3),
-                     ProcessControlBlock(2, 2, 9, 5),
-                     ProcessControlBlock(3, 3, 5, 1),
-                     ProcessControlBlock(4, 7, 1, 4)]
-        self._test_algorithms(algorithms.preemptive, processes, [0, 1, 2, 4, 1, 0, 3])
-
-        processes = [ProcessControlBlock(0, 0, 3, 0),
-                     ProcessControlBlock(1, 10, 1, 3)]
-        self._test_algorithms(algorithms.preemptive, processes, [0, 1])
-
-        processes = [ProcessControlBlock(0, 1, 3, 10),
-                     ProcessControlBlock(1, 2, 5, 9),
-                     ProcessControlBlock(2, 4, 5, 8)]
-        self._test_algorithms(algorithms.preemptive, processes, [0, 1, 2])
-
-        processes = [ProcessControlBlock(0, 0, 3, 0)]
-        self._test_algorithms(algorithms.preemptive, processes, [0])
+        # Test for case where there is no overlapping arrival times.
+        # Test for case where there is one overlapping arrival times.
+        # Test for case where there are same arrival times for two processes but no running process.
+        # Test for case where there are two processes that arrived at the same time while another process is running.
+        # Test for case where there is a gap between process arrivals.
+        # Test for case where queue is preempted because the time slot was already filled up.
+        # Test for case where queue is preempted even though there are still processes arriving.
+        # Test for case where queue is preempted even though there are still processes waiting to have a first run.
+        # Test for case where another set of processes are added from another queue.
+        pass
 
     def test_round_robin(self):
-        processes = [ProcessControlBlock(0, 0, 8, 2),
-                     ProcessControlBlock(1, 1, 4, 3),
-                     ProcessControlBlock(2, 2, 9, 5),
-                     ProcessControlBlock(3, 3, 5, 1),
-                     ProcessControlBlock(4, 7, 1, 4)]
-        self._test_algorithms(algorithms.round_robin, processes, [0, 1, 2, 3, 0, 4, 2], 5)
-
-        # Test process scheduling with arrival time quite spread apart.
-        processes = [ProcessControlBlock(0, 0, 3, 0),
-                     ProcessControlBlock(1, 10, 1, 3)]
-        self._test_algorithms(algorithms.round_robin, processes, [0, 1])
-
-        # Test with only one process.
-        processes = [ProcessControlBlock(0, 0, 3, 0)]
-        self._test_algorithms(algorithms.round_robin, processes, [0])
-
-    @staticmethod
-    def _test_algorithms(algorithm, processes, expected_pid_order, quanta=0, time_allotment=0):
-        if quanta > 0:
-            scheduled_processes, _, _, _, _, _ = algorithm(processes, quanta, time_allotment=time_allotment)
-        else:
-            scheduled_processes, _, _, _, _, _ = algorithm(processes, time_allotment=time_allotment)
-
-        assert scheduled_processes.qsize() == len(expected_pid_order)
-
-        pid_index = 0
-        while not scheduled_processes.empty():
-            assert scheduled_processes.get() == expected_pid_order[pid_index]
-            pid_index += 1
+        # Test for case where there is no overlapping arrival times.
+        # Test for case where there is one overlapping arrival times.
+        # Test for case where there are same arrival times for two processes but no running process.
+        # Test for case where there are two processes that arrived at the same time while another process is running.
+        # Test for case where there is a gap between process arrivals.
+        # Test for case where queue is preempted because the time slot was already filled up.
+        # Test for case where queue is preempted even though there are still processes arriving.
+        # Test for case where queue is preempted even though there are still processes waiting to have a first run.
+        # Test for case where another set of processes are added from another queue.
+        pass
