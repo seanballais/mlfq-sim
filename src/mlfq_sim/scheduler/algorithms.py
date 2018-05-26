@@ -50,7 +50,7 @@ def round_robin(processes, additional_processes=list(), quanta=5, time_allotment
     for process in (processes + additional_processes):
         arrival_queue.put(process)
 
-    run_time = 0
+    run_time = start_time
     quanta_counter = 0
     remaining_time = time_allotment
     while not ready_queue.empty() or not arrival_queue.empty():
@@ -59,17 +59,20 @@ def round_robin(processes, additional_processes=list(), quanta=5, time_allotment
             # if there is a time_allotment set.
             break
 
-        curr_process = arrival_queue.get_process(run_time)
+        new_process = arrival_queue.get_process(run_time)
+        while new_process is not None:
+            ready_queue.put(new_process)
+            new_process = arrival_queue.get_process(run_time)
 
-        if curr_process is None:
-            if not ready_queue.empty():
-                curr_process = ready_queue.get()
-            else:
-                run_time += 1
-                continue
-        else:
-            ready_queue.put(curr_process)
+        if not ready_queue.empty():
             curr_process = ready_queue.get()
+        else:
+            run_time += 1
+
+            if time_allotment > 0:
+                remaining_time -= 1
+
+            continue
 
         while quanta_counter < quanta and curr_process.get_remaining_time() > 0:
             if remaining_time <= 0 < time_allotment:
@@ -85,12 +88,14 @@ def round_robin(processes, additional_processes=list(), quanta=5, time_allotment
                 newly_arrived_process = arrival_queue.get_process(run_time)
 
             run_time += 1
+
+            if time_allotment > 0:
+                remaining_time -= 1
+
             quanta_counter += 1
 
         if curr_process.get_remaining_time() > 0:
             if quanta_counter > 0:
-                promoted_processes.append(curr_process)
-            else:
                 demoted_processes.append(curr_process)
 
         schedule.append(curr_process.get_pid())
