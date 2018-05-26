@@ -415,7 +415,8 @@ class TestSchedulingAlgorithms:
         processes = [ProcessControlBlock(0, 0, 5, 0)]
         resulting_process = ProcessControlBlock(0, 0, 5, 0)
         resulting_process.execute(0, 2)
-        assert algorithms.round_robin(processes, quanta=5, time_allotment=2) == ([0], [], [], [], [resulting_process], 2)
+        assert algorithms.round_robin(processes, quanta=5, time_allotment=2) == ([0], [], [], [],
+                                                                                 [resulting_process], 2)
 
         # Test for case where queue is preempted even though there are still processes arriving.
         processes = [ProcessControlBlock(0, 10, 5, 0)]
