@@ -186,8 +186,15 @@ def _simulate_schedule(processes, priority_criterion,
                         wait_queue.put(newly_arrived_process)
                     else:
                         # Preempt the current process.
-                        schedule.append(curr_process.get_pid())
-                        promoted_processes.append(curr_process)
+                        if curr_process.get_arrival_time() == newly_arrived_process.get_arrival_time():
+                            # For case where two or more processes arrived at the same time.
+                            # This condition to occur when comparing between an already running process
+                            # and a newly arrived process.
+                            wait_queue.put(curr_process)
+                        else:
+                            schedule.append(curr_process.get_pid())
+                            promoted_processes.append(curr_process)
+
                         curr_process = newly_arrived_process
                 else:
                     # Since we are not preempting processes, we're just gonna put it
