@@ -173,24 +173,24 @@ class TestSchedulingAlgorithms:
         # Test for case where there is a gap between process arrivals.
         processes = [ProcessControlBlock(0, 0, 5, 0),
                      ProcessControlBlock(1, 10, 5, 0)]
-        assert algorithms.sjf(processes) == ([0, 1], [], [], [], [], 15)
+        assert algorithms.srtf(processes) == ([0, 1], [], [], [], [], 15)
 
         # Test for case where queue is preempted because the time slot was already filled up.
         processes = [ProcessControlBlock(0, 0, 5, 0)]
         resulting_process = ProcessControlBlock(0, 0, 5, 0)
         resulting_process.execute(0, 2)
-        assert algorithms.sjf(processes, time_allotment=2) == ([0], [], [], [resulting_process], [], 2)
+        assert algorithms.srtf(processes, time_allotment=2) == ([0], [], [], [resulting_process], [], 2)
 
         # Test for case where queue is preempted even though there are still processes arriving.
         processes = [ProcessControlBlock(0, 10, 5, 0)]
-        assert algorithms.sjf(processes, time_allotment=5) == ([], [ProcessControlBlock(0, 10, 5, 0)], [], [], [], 5)
+        assert algorithms.srtf(processes, time_allotment=5) == ([], [ProcessControlBlock(0, 10, 5, 0)], [], [], [], 5)
 
         # Test for case where queue is preempted even though there are still processes waiting to have a first run.
         processes = [ProcessControlBlock(0, 0, 5, 0),
                      ProcessControlBlock(1, 1, 5, 0)]
         promoted_process = ProcessControlBlock(0, 0, 5, 0)
         promoted_process.execute(0, 2)
-        assert algorithms.sjf(processes, time_allotment=2) == ([0],
+        assert algorithms.srtf(processes, time_allotment=2) == ([0],
                                                                [],
                                                                [ProcessControlBlock(1, 1, 5, 0)],
                                                                [promoted_process],
@@ -201,21 +201,21 @@ class TestSchedulingAlgorithms:
                      ProcessControlBlock(1, 0, 3, 0)]
         promoted_process = ProcessControlBlock(1, 0, 3, 0)
         promoted_process.execute(0, 2)
-        assert algorithms.sjf(processes, time_allotment=2) == ([1],
-                                                               [],
-                                                               [ProcessControlBlock(0, 0, 5, 0)],
-                                                               [promoted_process],
-                                                               [],
-                                                               2)
+        assert algorithms.srtf(processes, time_allotment=2) == ([1],
+                                                                [],
+                                                                [ProcessControlBlock(0, 0, 5, 0)],
+                                                                [promoted_process],
+                                                                [],
+                                                                2)
 
         # Test for case where another set of processes are added from another queue.
         processes = [ProcessControlBlock(0, 2, 5, 0)]
         additional_processes = [ProcessControlBlock(1, 1, 5, 0)]
-        assert algorithms.sjf(processes, additional_processes, start_time=1) == ([1, 0], [], [], [], [], 11)
+        assert algorithms.srtf(processes, additional_processes, start_time=1) == ([1, 0], [], [], [], [], 11)
 
         processes = [ProcessControlBlock(0, 0, 5, 0)]
         additional_processes = [ProcessControlBlock(1, 0, 3, 0)]
-        assert algorithms.sjf(processes, additional_processes) == ([1, 0], [], [], [], [], 8)
+        assert algorithms.srtf(processes, additional_processes) == ([1, 0], [], [], [], [], 8)
 
     def test_non_preemptive(self):
         # Test for case where there is no overlapping arrival times.
