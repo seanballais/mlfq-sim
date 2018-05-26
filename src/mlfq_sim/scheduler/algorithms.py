@@ -179,8 +179,8 @@ def _simulate_schedule(processes, priority_criterion,
             newly_arrived_process = arrival_queue.get_process(run_time)
             while newly_arrived_process is not None:
                 if is_preemptive:
-                    if comparison_func(getattr(curr_process, priority_criterion)(),
-                                       getattr(newly_arrived_process, priority_criterion)()):
+                    if (comparison_func(getattr(curr_process, priority_criterion)(),
+                                        getattr(newly_arrived_process, priority_criterion)())):
                         # We will still use the current process since it has higher priority.
                         # So better put the newly arrived process to the wait queue.
                         wait_queue.put(newly_arrived_process)
@@ -210,11 +210,12 @@ def _simulate_schedule(processes, priority_criterion,
             if time_allotment > 0:
                 remaining_time -= 1
 
-        if curr_process.get_remaining_time() > 0:
+        if curr_process.get_remaining_time() > 0 and len(curr_process.get_execution_history()) != 0:
             # It was preempted. Promote it.
             promoted_processes.append(curr_process)
 
-        schedule.append(curr_process.get_pid())
+        if remaining_time <= time_allotment and len(curr_process.get_execution_history()) != 0:
+            schedule.append(curr_process.get_pid())
 
     return (schedule,
             _queue_to_list(arrival_queue),
@@ -234,14 +235,14 @@ def _queue_to_list(q):
 
 
 def _is_greater_than(a, b):
-    if a > b:
+    if a >= b:
         return True
 
     return False
 
 
 def _is_less_than(a, b):
-    if a < b:
+    if a <= b:
         return True
 
     return False
