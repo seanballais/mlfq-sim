@@ -67,12 +67,7 @@ def round_robin(processes, additional_processes=list(), quanta=5, time_allotment
         if not ready_queue.empty():
             curr_process = ready_queue.get()
         else:
-            run_time += 1
-
-            if time_allotment > 0:
-                remaining_time -= 1
-
-            continue
+            break
 
         while quanta_counter < quanta and curr_process.get_remaining_time() > 0:
             if remaining_time <= 0 < time_allotment:
@@ -152,8 +147,15 @@ def _simulate_schedule(processes, priority_criterion,
     else:  # Sp we do the low number, higher priority thing that it is in SRTF.
         comparison_func = _is_less_than
 
-    # Time to schedule.
+    # Capture all previous processes too.
     run_time = start_time
+    for time in range(0, run_time + 1):
+        process = arrival_queue.get_process(time)
+        while process is not None:
+            wait_queue.put(process)
+            process = arrival_queue.get_process(time)
+
+    # Time to schedule.
     remaining_time = time_allotment
     while not arrival_queue.empty() or not wait_queue.empty():
         if remaining_time <= 0 < time_allotment:
@@ -170,12 +172,7 @@ def _simulate_schedule(processes, priority_criterion,
         if not wait_queue.empty():
             curr_process = wait_queue.get()
         else:
-            run_time += 1
-
-            if time_allotment > 0:
-                remaining_time -= 1
-
-            continue
+            break
 
         while curr_process.get_remaining_time() > 0:
             if remaining_time <= 0 < time_allotment:

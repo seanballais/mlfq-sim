@@ -31,7 +31,7 @@ class TestSchedulingAlgorithms:
         # Test for case where there is a gap between process arrivals.
         processes = [ProcessControlBlock(0, 0, 5, 0),
                      ProcessControlBlock(1, 10, 5, 0)]
-        assert algorithms.fcfs(processes) == ([0, 1], [], [], [], [], 15)
+        assert algorithms.fcfs(processes) == ([0], [ProcessControlBlock(1, 10, 5, 0)], [], [], [], 5)
 
         # Test for case where queue is preempted because the time slot was already filled up.
         processes = [ProcessControlBlock(0, 0, 5, 0)]
@@ -41,7 +41,7 @@ class TestSchedulingAlgorithms:
 
         # Test for case where queue is preempted even though there are still processes arriving.
         processes = [ProcessControlBlock(0, 10, 5, 0)]
-        assert algorithms.fcfs(processes, time_allotment=5) == ([], [ProcessControlBlock(0, 10, 5, 0)], [], [], [], 5)
+        assert algorithms.fcfs(processes, time_allotment=5) == ([], [ProcessControlBlock(0, 10, 5, 0)], [], [], [], 0)
 
         # Test for case where queue is preempted even though there are still processes waiting to have a first run.
         processes = [ProcessControlBlock(0, 0, 5, 0),
@@ -90,7 +90,7 @@ class TestSchedulingAlgorithms:
         # Test for case where there is a gap between process arrivals.
         processes = [ProcessControlBlock(0, 0, 5, 0),
                      ProcessControlBlock(1, 10, 5, 0)]
-        assert algorithms.sjf(processes) == ([0, 1], [], [], [], [], 15)
+        assert algorithms.sjf(processes) == ([0], [ProcessControlBlock(1, 10, 5, 0)], [], [], [], 5)
 
         # Test for case where queue is preempted because the time slot was already filled up.
         processes = [ProcessControlBlock(0, 0, 5, 0)]
@@ -100,7 +100,7 @@ class TestSchedulingAlgorithms:
 
         # Test for case where queue is preempted even though there are still processes arriving.
         processes = [ProcessControlBlock(0, 10, 5, 0)]
-        assert algorithms.sjf(processes, time_allotment=5) == ([], [ProcessControlBlock(0, 10, 5, 0)], [], [], [], 5)
+        assert algorithms.sjf(processes, time_allotment=5) == ([], [ProcessControlBlock(0, 10, 5, 0)], [], [], [], 0)
 
         # Test for case where queue is preempted even though there are still processes waiting to have a first run.
         processes = [ProcessControlBlock(0, 0, 5, 0),
@@ -155,7 +155,8 @@ class TestSchedulingAlgorithms:
         # Test for case where there are same arrival times for two processes but no running process.
         processes = [ProcessControlBlock(0, 5, 5, 0),
                      ProcessControlBlock(1, 5, 3, 0)]
-        assert algorithms.srtf(processes) == ([1, 0], [], [], [], [], 13)
+        assert algorithms.srtf(processes) == ([], [ProcessControlBlock(0, 5, 5, 0),
+                                                   ProcessControlBlock(1, 5, 3, 0)], [], [], [], 0)
 
         # Test for case where there are two processes that arrived at the same time while another process is running.
         processes = [ProcessControlBlock(0, 0, 5, 0),
@@ -173,7 +174,7 @@ class TestSchedulingAlgorithms:
         # Test for case where there is a gap between process arrivals.
         processes = [ProcessControlBlock(0, 0, 5, 0),
                      ProcessControlBlock(1, 10, 5, 0)]
-        assert algorithms.srtf(processes) == ([0, 1], [], [], [], [], 15)
+        assert algorithms.srtf(processes) == ([0], [ProcessControlBlock(1, 10, 5, 0)], [], [], [], 5)
 
         # Test for case where queue is preempted because the time slot was already filled up.
         processes = [ProcessControlBlock(0, 0, 5, 0)]
@@ -183,7 +184,7 @@ class TestSchedulingAlgorithms:
 
         # Test for case where queue is preempted even though there are still processes arriving.
         processes = [ProcessControlBlock(0, 10, 5, 0)]
-        assert algorithms.srtf(processes, time_allotment=5) == ([], [ProcessControlBlock(0, 10, 5, 0)], [], [], [], 5)
+        assert algorithms.srtf(processes, time_allotment=5) == ([], [ProcessControlBlock(0, 10, 5, 0)], [], [], [], 0)
 
         # Test for case where queue is preempted even though there are still processes waiting to have a first run.
         processes = [ProcessControlBlock(0, 0, 5, 0),
@@ -247,11 +248,11 @@ class TestSchedulingAlgorithms:
         # Test for case where there is a gap between process arrivals.
         processes = [ProcessControlBlock(0, 0, 5, 0),
                      ProcessControlBlock(1, 10, 5, 1)]
-        assert algorithms.non_preemptive(processes) == ([0, 1], [], [], [], [], 15)
+        assert algorithms.non_preemptive(processes) == ([0], [ProcessControlBlock(1, 10, 5, 1)], [], [], [], 5)
 
         processes = [ProcessControlBlock(0, 0, 5, 0),
                      ProcessControlBlock(1, 10, 5, 0)]
-        assert algorithms.non_preemptive(processes) == ([0, 1], [], [], [], [], 15)
+        assert algorithms.non_preemptive(processes) == ([0], [ProcessControlBlock(1, 10, 5, 0)], [], [], [], 5)
 
         # Test for case where queue is preempted because the time slot was already filled up.
         processes = [ProcessControlBlock(0, 0, 5, 0)]
@@ -262,7 +263,7 @@ class TestSchedulingAlgorithms:
         # Test for case where queue is preempted even though there are still processes arriving.
         processes = [ProcessControlBlock(0, 10, 5, 0)]
         assert algorithms.non_preemptive(processes, time_allotment=5) == ([], [ProcessControlBlock(0, 10, 5, 0)],
-                                                                          [], [], [], 5)
+                                                                          [], [], [], 0)
 
         # Test for case where queue is preempted even though there are still processes waiting to have a first run.
         processes = [ProcessControlBlock(0, 0, 5, 0),
@@ -317,7 +318,9 @@ class TestSchedulingAlgorithms:
         # Test for case where there are same arrival times for two processes but no running process.
         processes = [ProcessControlBlock(0, 5, 5, 0),
                      ProcessControlBlock(1, 5, 3, 1)]
-        assert algorithms.preemptive(processes) == ([1, 0], [], [], [], [], 13)
+        assert algorithms.preemptive(processes) == ([], [ProcessControlBlock(0, 5, 5, 0),
+                                                         ProcessControlBlock(1, 5, 3, 1)],
+                                                    [], [], [], 0)
 
         # Test for case where there are two processes that arrived at the same time while another process is running.
         processes = [ProcessControlBlock(0, 0, 5, 1),
@@ -335,7 +338,7 @@ class TestSchedulingAlgorithms:
         # Test for case where there is a gap between process arrivals.
         processes = [ProcessControlBlock(0, 0, 5, 0),
                      ProcessControlBlock(1, 10, 5, 0)]
-        assert algorithms.preemptive(processes) == ([0, 1], [], [], [], [], 15)
+        assert algorithms.preemptive(processes) == ([0], [ProcessControlBlock(1, 10, 5, 0)], [], [], [], 5)
 
         # Test for case where queue is preempted because the time slot was already filled up.
         processes = [ProcessControlBlock(0, 0, 5, 0)]
@@ -345,7 +348,9 @@ class TestSchedulingAlgorithms:
 
         # Test for case where queue is preempted even though there are still processes arriving.
         processes = [ProcessControlBlock(0, 10, 5, 0)]
-        assert algorithms.preemptive(processes, time_allotment=5) == ([], [ProcessControlBlock(0, 10, 5, 0)], [], [], [], 5)
+        assert algorithms.preemptive(processes, time_allotment=5) == ([],
+                                                                      [ProcessControlBlock(0, 10, 5, 0)],
+                                                                      [], [], [], 0)
 
         # Test for case where queue is preempted even though there are still processes waiting to have a first run.
         processes = [ProcessControlBlock(0, 0, 5, 0),
@@ -409,7 +414,7 @@ class TestSchedulingAlgorithms:
         # Test for case where there is a gap between process arrivals.
         processes = [ProcessControlBlock(0, 0, 5, 0),
                      ProcessControlBlock(1, 10, 5, 0)]
-        assert algorithms.round_robin(processes, quanta=5) == ([0, 1], [], [], [], [], 15)
+        assert algorithms.round_robin(processes, quanta=5) == ([0], [ProcessControlBlock(1, 10, 5, 0)], [], [], [], 5)
 
         # Test for case where queue is preempted because the time slot was already filled up.
         processes = [ProcessControlBlock(0, 0, 5, 0)]
@@ -421,7 +426,7 @@ class TestSchedulingAlgorithms:
         # Test for case where queue is preempted even though there are still processes arriving.
         processes = [ProcessControlBlock(0, 10, 5, 0)]
         assert algorithms.round_robin(processes, quanta=5, time_allotment=5) == ([], [ProcessControlBlock(0, 10, 5, 0)],
-                                                                                 [], [], [], 5)
+                                                                                 [], [], [], 0)
 
         # Test for case where queue is preempted even though there are still processes waiting to have a first run.
         processes = [ProcessControlBlock(0, 0, 5, 0),
@@ -438,7 +443,9 @@ class TestSchedulingAlgorithms:
         # Test for case where queue has a time block and a gap between processes.
         processes = [ProcessControlBlock(0, 0, 5, 0),
                      ProcessControlBlock(1, 10, 5, 0)]
-        assert algorithms.round_robin(processes, quanta=5, time_allotment=15) == ([0, 1], [], [], [], [], 15)
+        assert algorithms.round_robin(processes, quanta=5, time_allotment=15) == ([0],
+                                                                                  [ProcessControlBlock(1, 10, 5, 0)],
+                                                                                  [], [], [], 5)
 
         # Test for case where another set of processes are added from another queue.
         processes = [ProcessControlBlock(0, 0, 5, 0)]
