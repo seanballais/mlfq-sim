@@ -24,6 +24,26 @@ class ScheduleItem:
         return self.start_time + self.length
 
 
+class AgedQueue(queue.PriorityQueue):
+    def __init__(self, max_size=0):
+        super().__init__(max_size)
+        self._index = 0
+
+    def _put(self, process):
+        process_age = len(process.get_execution_history())
+        heapq.heappush(self.queue, (process_age, self._index, process))
+        self._index += 1
+
+    def _get(self):
+        # The object itself is the third element
+        # in the tuple.
+        try:
+            process = heapq.heappop(self.queue)
+            return process[2]
+        except IndexError:
+            return None
+
+
 class WaitQueue(queue.PriorityQueue):
     def __init__(self, key=lambda process: process.get_arrival_time(), max_size=0):
         super().__init__(max_size)

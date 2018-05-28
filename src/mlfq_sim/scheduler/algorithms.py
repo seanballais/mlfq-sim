@@ -5,6 +5,7 @@ import queue
 
 from mlfq_sim.ds.scheduling import WaitQueue
 from mlfq_sim.ds.scheduling import ArrivalQueue
+from mlfq_sim.ds.scheduling import AgedQueue
 
 
 def fcfs(processes, additional_processes=list(), time_allotment=0, start_time=0):
@@ -42,7 +43,7 @@ def round_robin(processes, additional_processes=list(), quanta=5, time_allotment
     # Currently limited to one process where time unit.
     schedule = []
 
-    ready_queue = queue.Queue()
+    ready_queue = AgedQueue()
     arrival_queue = ArrivalQueue()
     promoted_processes = []
     demoted_processes = []
