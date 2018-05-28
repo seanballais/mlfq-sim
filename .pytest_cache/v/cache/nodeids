@@ -21,6 +21,8 @@
   "tests/scheduler/algorithms_test.py::TestSchedulingAlgorithms::()::test_non_preemptive",
   "tests/scheduler/algorithms_test.py::TestSchedulingAlgorithms::()::test_preemptive",
   "tests/scheduler/algorithms_test.py::TestSchedulingAlgorithms::()::test_round_robin",
+  "tests/scheduler/mlfq_test.py::TestMLFQ::()::test_setup",
   "tests/scheduler/mlfq_test.py::TestMLFQ::()::test_one_queue",
-  "tests/scheduler/mlfq_test.py::TestMLFQ::()::test_two_queues"
+  "tests/scheduler/mlfq_test.py::TestMLFQ::()::test_two_queues",
+  "tests/scheduler/mlfq_test.py::TestMLFQ::()::test_three_queues"
 ]
