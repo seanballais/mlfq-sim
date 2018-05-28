@@ -130,12 +130,9 @@ class MLFQ:
                     self.arrival_queue.put(process)
 
                 for process in wait_queue:
-                    current_queue.put(process)
+                    current_queue.add_process(process)
 
                 for process in promoted_processes:
-                    if len(process.get_execution_history()) > 0:
-                        process.arrival_time = run_time
-
                     self.queues[max(0, current_queue_index - 1)].add_process(process)
 
                 for process in demoted_processes:

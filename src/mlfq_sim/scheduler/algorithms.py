@@ -47,10 +47,13 @@ def round_robin(processes, additional_processes=list(), quanta=5, time_allotment
     promoted_processes = []
     demoted_processes = []
 
-    for process in (processes + additional_processes):
-        arrival_queue.put(process)
-
     run_time = start_time
+    for process in processes + additional_processes:
+        if process.get_arrival_time() < run_time:
+            ready_queue.put(process)
+        else:
+            arrival_queue.put(process)
+
     quanta_counter = 0
     remaining_time = time_allotment
     while not ready_queue.empty() or not arrival_queue.empty():
@@ -97,7 +100,7 @@ def round_robin(processes, additional_processes=list(), quanta=5, time_allotment
 
         quanta_counter = 0
 
-    return (schedule,
+    return (_merge_same_adjacent_elements(schedule),
             _queue_to_list(arrival_queue),
             _queue_to_list(ready_queue),
             promoted_processes,
@@ -139,8 +142,12 @@ def _simulate_schedule(processes, priority_criterion,
         wait_queue.put(process)
 
     # Populate the arrival queue.
+    run_time = start_time
     for process in processes:
-        arrival_queue.put(process)
+        if process.get_arrival_time() < run_time:
+            wait_queue.put(process)
+        else:
+            arrival_queue.put(process)
 
     if high_number_prio:
         comparison_func = _is_greater_than
@@ -148,7 +155,6 @@ def _simulate_schedule(processes, priority_criterion,
         comparison_func = _is_less_than
 
     # Capture all previous processes too.
-    run_time = start_time
     for time in range(0, run_time + 1):
         process = arrival_queue.get_process(time)
         while process is not None:
@@ -219,7 +225,7 @@ def _simulate_schedule(processes, priority_criterion,
         if remaining_time <= time_allotment and len(curr_process.get_execution_history()) != 0:
             schedule.append(curr_process.get_pid())
 
-    return (schedule,
+    return (_merge_same_adjacent_elements(schedule),
             _queue_to_list(arrival_queue),
             _queue_to_list(wait_queue),
             promoted_processes,
@@ -247,4 +253,15 @@ def _is_less_than(a, b):
     if a <= b:
         return True
 
-    return False
+
+def _merge_same_adjacent_elements(element_list):
+    new_list = []
+    if len(element_list) > 0:
+        current_element = element_list[0]
+        new_list.append(current_element)
+        for index in range(1, len(element_list)):
+            if current_element != element_list[index]:
+                current_element = element_list[index]
+                new_list.append(current_element)
+
+    return new_list

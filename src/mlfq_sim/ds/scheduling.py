@@ -32,18 +32,18 @@ class WaitQueue(queue.PriorityQueue):
         self._priority_key = lambda process: process.get_priority()
 
     def _put(self, process):
-        heapq.heappush(self.queue, (self._key(process),
-                                    self._priority_key(process),
-                                    self._index,
-                                    process))
+        process_age = len(process.get_execution_history())
+        key = self._key(process)
+        priority_key = self._priority_key(process)
+        heapq.heappush(self.queue, (process_age, key, priority_key, self._index, process))
         self._index += 1
 
     def _get(self):
-        # The object itself is the fourth element
+        # The object itself is the fifth element
         # in the tuple.
         try:
             process = heapq.heappop(self.queue)
-            return process[3]
+            return process[4]
         except IndexError:
             return None
 
@@ -51,7 +51,7 @@ class WaitQueue(queue.PriorityQueue):
         if len(self.queue) == 0:
             return None
         
-        return self.queue[0][3]
+        return self.queue[0][4]
 
 
 class ArrivalQueue(WaitQueue):

@@ -50,7 +50,7 @@ class TestMLFQ:
         assert run_time == 10
 
         # Test with three processes.
-        """processes = [ProcessControlBlock(0, 0, 20, 0),
+        processes = [ProcessControlBlock(0, 0, 20, 0),
                      ProcessControlBlock(1, 15, 5, 0),
                      ProcessControlBlock(2, 20, 5, 0)]
         queues = [mlfq.MLFQQueue(algorithms.round_robin, quanta=5),
@@ -63,9 +63,9 @@ class TestMLFQ:
         assert process[0].get_pid() == 0
         assert process[1].get_pid() == 1
         assert process[2].get_pid() == 2
-        assert run_time == 30"""
+        assert run_time == 30
 
-        # Test with gaps in between processes/
+        # Test with gaps in between processes.
         processes = [ProcessControlBlock(0, 0, 5, 0),
                      ProcessControlBlock(1, 10, 5, 0)]
         queues = [mlfq.MLFQQueue(algorithms.round_robin, quanta=5),
