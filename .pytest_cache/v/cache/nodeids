@@ -24,5 +24,6 @@
   "tests/scheduler/mlfq_test.py::TestMLFQ::()::test_setup",
   "tests/scheduler/mlfq_test.py::TestMLFQ::()::test_one_queue",
   "tests/scheduler/mlfq_test.py::TestMLFQ::()::test_two_queues",
-  "tests/scheduler/mlfq_test.py::TestMLFQ::()::test_three_queues"
+  "tests/scheduler/mlfq_test.py::TestMLFQ::()::test_three_queues",
+  "tests/scheduler/mlfq_test.py::TestMLFQ::()::test_nearest_preemption_time"
 ]
