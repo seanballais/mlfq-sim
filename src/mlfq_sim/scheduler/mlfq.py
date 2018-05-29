@@ -165,24 +165,28 @@ class MLFQ:
 
             schedule, _, _, _, _, run_time = self.queues[0].execute(0, 0)
         else:
-            traversed_queues = 0
             while not self.arrival_queue.empty() or self._queues_has_processes():
                 current_queue = self.queues[current_queue_index]
 
                 if current_queue_index == 0:
                     while not self.arrival_queue.empty():
                         current_queue.add_process(self.arrival_queue.get())
-                else:
-                    # We're somewhere in the bottom of the topmost queue.
-                    if not current_queue.has_processes():
-                        current_queue_index = (current_queue_index + 1) % len(self.queues)
-                        traversed_queues += 1
 
-                        if traversed_queues == len(self.queues):
-                            traversed_queues = 0
-                            run_time += 1
+                traversed_queues = 0
+                found_queue_with_processes = True
+                while not current_queue.has_processes():
+                    current_queue_index = (current_queue_index + 1) % len(self.queues)
+                    current_queue = self.queues[current_queue_index]
+                    traversed_queues += 1
 
-                        continue
+                    if traversed_queues == len(self.queues):
+                        found_queue_with_processes = False
+                        break
+
+                if not found_queue_with_processes:
+                    run_time += 1
+                    current_queue_index = 0
+                    continue
 
                 # We're at the topmost queue.
                 (queue_schedule,
