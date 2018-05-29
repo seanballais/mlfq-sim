@@ -65,6 +65,7 @@ class MLFQ:
             self.arrival_queue.put(process)
 
         self.arrival_times = sorted(list(self.arrival_times))
+        self.time_slot = time_slot
 
         if time_slot > 0:
             # Queuing scheme is fixed time slot.
@@ -154,7 +155,59 @@ class MLFQ:
         return self._merge_same_adjacent_elements(schedule), self.processes, run_time
 
     def _schedule_fixed_time_slots(self):
-        return 1, 2, 3
+        schedule = []
+        current_queue_index = 0
+        run_time = 0
+
+        if len(self.queues) == 1:
+            while not self.arrival_queue.empty():
+                self.queues[0].add_process(self.arrival_queue.get())
+
+            schedule, _, _, _, _, run_time = self.queues[0].execute(0, 0)
+        else:
+            traversed_queues = 0
+            while not self.arrival_queue.empty() or self._queues_has_processes():
+                current_queue = self.queues[current_queue_index]
+
+                if current_queue_index == 0:
+                    while not self.arrival_queue.empty():
+                        current_queue.add_process(self.arrival_queue.get())
+                else:
+                    # We're somewhere in the bottom of the topmost queue.
+                    if not current_queue.has_processes():
+                        current_queue_index = (current_queue_index + 1) % len(self.queues)
+                        traversed_queues += 1
+
+                        if traversed_queues == len(self.queues):
+                            traversed_queues = 0
+                            run_time += 1
+
+                        continue
+
+                # We're at the topmost queue.
+                (queue_schedule,
+                 arrival_queue,
+                 wait_queue,
+                 promoted_processes,
+                 demoted_processes,
+                 run_time
+                 ) = current_queue.execute(self.time_slot, run_time)
+
+                current_queue_index = (current_queue_index + 1) % len(self.queues)
+                schedule += queue_schedule
+                for process in arrival_queue:
+                    self.arrival_queue.put(process)
+
+                for process in wait_queue:
+                    current_queue.add_process(process)
+
+                for process in promoted_processes:
+                    self.queues[max(0, current_queue_index - 1)].add_process(process)
+
+                for process in demoted_processes:
+                    self.queues[min(len(self.queues) - 1, current_queue_index + 1)].add_process(process)
+
+        return self._merge_same_adjacent_elements(schedule), self.processes, run_time
 
     def _queues_has_processes(self):
         for queue in self.queues:
