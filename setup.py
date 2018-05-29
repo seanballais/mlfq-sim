@@ -16,7 +16,7 @@ entry_points = """
 [console_scripts]
 # script_name = mlfq_sim.module:function
 # For example:
-app = mlfq_sim.App:run
+app = mlfq_sim.App:main
 """
 
 
