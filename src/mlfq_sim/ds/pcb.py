@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import json
+
 
 class ExecutionHistoryItem:
     def __init__(self, start_time, length):
@@ -20,6 +22,13 @@ class ExecutionHistoryItem:
 
     def get_end(self):
         return self.start_time + self.length
+
+    def as_dict(self):
+        return {
+            'start': self.get_start(),
+            'length': self.get_length(),
+            'end': self.get_end()
+        }
 
     def __eq__(self, other):
         if (self.get_start() == other.get_start()
@@ -102,6 +111,36 @@ class ProcessControlBlock:
                 recent_item.length += length
             else:
                 self.execution_history.append(ExecutionHistoryItem(start_time, length))
+
+    def as_dict(self):
+        process_execution_history = self.get_execution_history()
+        execution_history = []
+        for item in process_execution_history:
+            execution_history.append(item.as_dict())
+
+        response_time = self.get_execution_history()[0].get_start() - self.get_arrival_time()
+
+        waiting_time = response_time
+        for index in range(1, len(process_execution_history) + 1):
+            waiting_time += (process_execution_history[index].get_start()
+                             - process_execution_history[index - 1].get_end())
+
+        turnaround_time = (process_execution_history[len(process_execution_history) - 1].get_end()
+                           - self.get_arrival_time())
+
+        return {
+            'pid': self.get_pid(),
+            'arrival_time': self.get_arrival_time(),
+            'burst_time': self.get_burst_time(),
+            'priority': self.get_priority(),
+            'response_time': response_time,
+            'waiting_time': waiting_time,
+            'turnaround_time': turnaround_time,
+            'execution_history': process_execution_history
+        }
+
+    def to_json(self):
+        return json.dumps(self.as_dict())
 
     def __eq__(self, other):
         if (self.get_pid() == other.get_pid()
