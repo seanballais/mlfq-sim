@@ -24,53 +24,24 @@ class ScheduleItem:
         return self.start_time + self.length
 
 
-class MLFQQueue:
-    def __init__(self, processes=[], scheduling_algorithm=None):
-        self.processes = {}
-        for process in processes:
-            self.processes[process.get_pid()] = process
-
-        self.scheduling_algorithm = scheduling_algorithm
-        self.schedule = None
-
-    def add_process(self, process):
-        self.processes[process.get_pid()] = process
-
-    def remove_process(self, pid):
-        process = self.processes[pid]
-        del self.processes[pid]
-        return process
-
-    def set_scheduling_algorithm(self, algorithm):
-        self.scheduling_algorithm = algorithm
-
-    def schedule_processes(self, quanta=0):
-        listed_processes = []
-        for key, value in self.processes.items():
-            listed_processes.append(value)
-
-        if quanta > 0:
-            self.schedule = self.scheduling_algorithm(listed_processes, quanta)
-        else:
-            self.schedule = self.scheduling_algorithm(listed_processes)
-
-    def get_schedule(self):
-        return self.schedule
-
-
-    def empty(self):
-        return len(self.processes) == 0
-
-
-class PeekableQueue(queue.Queue):
+class AgedQueue(queue.PriorityQueue):
     def __init__(self, max_size=0):
         super().__init__(max_size)
+        self._index = 0
 
-    def peek(self):
-        if len(self.queue) == 0:
+    def _put(self, process):
+        process_age = len(process.get_execution_history())
+        heapq.heappush(self.queue, (process_age, self._index, process))
+        self._index += 1
+
+    def _get(self):
+        # The object itself is the third element
+        # in the tuple.
+        try:
+            process = heapq.heappop(self.queue)
+            return process[2]
+        except IndexError:
             return None
-
-        return self.queue[0]
 
 
 class WaitQueue(queue.PriorityQueue):
@@ -81,18 +52,18 @@ class WaitQueue(queue.PriorityQueue):
         self._priority_key = lambda process: process.get_priority()
 
     def _put(self, process):
-        heapq.heappush(self.queue, (self._key(process),
-                                    self._priority_key(process),
-                                    self._index,
-                                    process))
+        process_age = len(process.get_execution_history())
+        key = self._key(process)
+        priority_key = self._priority_key(process)
+        heapq.heappush(self.queue, (process_age, key, priority_key, self._index, process))
         self._index += 1
 
     def _get(self):
-        # The object itself is the fourth element
+        # The object itself is the fifth element
         # in the tuple.
         try:
             process = heapq.heappop(self.queue)
-            return process[3]
+            return process[4]
         except IndexError:
             return None
 
@@ -100,10 +71,7 @@ class WaitQueue(queue.PriorityQueue):
         if len(self.queue) == 0:
             return None
         
-        return self.queue[0][3]
-
-    def to_str(self):
-        return str(self.queue)
+        return self.queue[0][4]
 
 
 class ArrivalQueue(WaitQueue):
@@ -113,6 +81,6 @@ class ArrivalQueue(WaitQueue):
     def get_process(self, arrival_time, block=True, timeout=None):
         new_process = self.peek()
         if new_process is not None and arrival_time == new_process.get_arrival_time():
-                return self.get(block, timeout)
+            return self.get(block, timeout)
 
         return None
