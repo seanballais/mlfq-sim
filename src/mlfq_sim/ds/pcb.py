@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import json
+import sys
 
 
 class ExecutionHistoryItem:
@@ -80,9 +81,7 @@ class ProcessControlBlock:
 
     def execute(self, start_time, length, record=True):
         if self.remaining_time == 0:
-            raise ExecutionRecordingException('Cannot record execution period '
-                                              + 'because the process has already'
-                                              + ' completed execution.')
+            sys.exit(-1)  # For testing purposes. Do not include malformed result.
 
         num_execution_items = len(self.execution_history)
         recent_item = None
@@ -95,10 +94,7 @@ class ProcessControlBlock:
             item_end = item_start + recent_item.get_length()
             
             if start_time <= item_start or start_time < item_end:
-                raise ExecutionRecordingException('Cannot record an execution period that has'
-                                                  + ' occurred in the past, or in between '
-                                                  + 'a certain previous execution period of '
-                                                  + 'the process.')
+                sys.exit(-1) # For testing purposes. Do not include malformed result.
             elif start_time == item_end:
                 increment_item = True
 
@@ -118,15 +114,21 @@ class ProcessControlBlock:
         for item in process_execution_history:
             execution_history.append(item.as_dict())
 
-        response_time = self.get_execution_history()[0].get_start() - self.get_arrival_time()
+        if len(process_execution_history) > 0:
+            response_time = self.get_execution_history()[0].get_start() - self.get_arrival_time()
+        else:
+            response_time = 0
 
         waiting_time = response_time
-        for index in range(1, len(process_execution_history) + 1):
+        for index in range(1, len(process_execution_history)):
             waiting_time += (process_execution_history[index].get_start()
                              - process_execution_history[index - 1].get_end())
 
-        turnaround_time = (process_execution_history[len(process_execution_history) - 1].get_end()
-                           - self.get_arrival_time())
+        if len(process_execution_history) > 0:
+            turnaround_time = (process_execution_history[len(process_execution_history) - 1].get_end()
+                               - self.get_arrival_time())
+        else:
+            turnaround_time = 0
 
         return {
             'pid': self.get_pid(),
@@ -136,7 +138,7 @@ class ProcessControlBlock:
             'response_time': response_time,
             'waiting_time': waiting_time,
             'turnaround_time': turnaround_time,
-            'execution_history': process_execution_history
+            'execution_history': execution_history
         }
 
     def to_json(self):
