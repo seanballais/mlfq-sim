@@ -34,6 +34,9 @@ class Ui_AppWindow(object):
         self.gantt_chart.canPan = True
 
         self.main_separator.addWidget(self.gantt_chart)
+        self.gantt_chart_note = QtWidgets.QLabel(self.centralWidget)
+        self.gantt_chart_note.setObjectName("gantt_chart_note")
+        self.main_separator.addWidget(self.gantt_chart_note)
         self.process_queue_creator = QtWidgets.QHBoxLayout()
         self.process_queue_creator.setSpacing(6)
         self.process_queue_creator.setObjectName("process_queue_creator")
@@ -242,6 +245,7 @@ class Ui_AppWindow(object):
     def retranslateUi(self, AppWindow):
         _translate = QtCore.QCoreApplication.translate
         AppWindow.setWindowTitle(_translate("AppWindow", "Multi-Level Feedback Queue Simulator"))
+        self.gantt_chart_note.setText(_translate("AppWindow", "NOTE: Use the left mouse button to pan. Use right button and drag to zoom. Double right click to zoom out to the full image."))
         self.queues_label.setText(_translate("AppWindow", "Queues"))
         self.add_queue_label.setText(_translate("AppWindow", "Add Queue"))
         self.algorithm_selection_label.setText(_translate("AppWindow", "Select algorithm"))
