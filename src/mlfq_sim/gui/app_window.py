@@ -251,7 +251,7 @@ class Ui_AppWindow(object):
         self.add_new_process_button.setText(_translate("AppWindow", "Add New Process"))
         self.delete_selected_process_button.setText(_translate("AppWindow", "Delete Selected Process"))
         self.view_process_execution_details.setText(_translate("AppWindow", "View Process Execution Details"))
-        self.processes_info.setText(_translate("AppWindow", "NOTE: Select a row in the table above to be able to delete a process."))
+        self.processes_info.setText(_translate("AppWindow", "NOTE: Start modifying a process's data by double clicking on a process's row cell."))
         self.simulate_mlfq_button.setText(_translate("AppWindow", "▷ Simulate MLFQ"))
 
     def add_new_row_to_process(self):
@@ -288,4 +288,5 @@ class Ui_AppWindow(object):
             cell = self.queues_table.selectedIndexes()[0]
             self.queues_table.removeRow(cell.row())
             
-
+    def simulate_mlfq(self):
+        pass
