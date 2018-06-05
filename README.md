@@ -9,20 +9,14 @@ A simulation of a Multi-Level Feedback Queue.
 The project is a simulation of an operating system process scheduling algorithm called a Multi-Level Feedback Queue. It basically schedules processes for the CPU with no a priori knowledge on when the processes arrive or how long they take to execute. The algorithm "learns" which processes should be run first and which should be skipped for a while.
 
 ## Getting Started
-Latest released version: v0.1.0dev
+Latest released version: v0.2.0dev
 
 ### Prerequisites
 We use Python 3 for this project. The project uses Python 3-specific features and syntax, making it incompatible with Python 2. This means that it won't run in Python 2. Besides, we're urged to upgrade to Python 3. New projects are asked to be developed using Python 3. As a news flash (if your are not aware), by 2020, Python 2 will no longer be supported. If you have not installed Python 3 yet, please install it before running this project.
 
-The following libraries are used by this project and must be installed in your system prior to running the project.
-
- * [PyQt 5](http://pyqt.sourceforge.net/Docs/PyQt5/installation.html)\*
- * [matplotlib](https://matplotlib.org/users/installing.html)
- * [numpy](https://www.scipy.org/scipylib/download.html)
+The project is written purely in Python 3. The only dependency is has is [PyQt 5](http://pyqt.sourceforge.net/Docs/PyQt5/installation.html)\* which is used for the GUI.
 
 \* The necessary parts of the LGPL version of Qt 5 will be included when installing this package with `pip`.
-
-The libraries will be installed later as you follow along with this guide.
 
 For package management, we use `pip`. The project requirements are listed in `requirements.txt`. It is preferable that you create a virtual environment for this project before running it. This is to prevent poisoning your system libraries. We use `virtualenv` for that matter..
 
@@ -93,22 +87,22 @@ This part is easy. Make sure you have Git installed. Don't tell me you don't. Th
 You may also use a GUI Git client, if you want to.
 
 
-#### Installing the packages
+#### Installing the dependencies
 **WARNING: If you didn't install and use `virtualenv`, you will be installing packages globally, which is [not good](https://realpython.com/python-virtual-environments-a-primer/#why-the-need-for-virtual-environments), and may lead to library versioning issues with other Python applications and packages.**
 
-The repo contains a `requirements.txt` file. This contains a listing of all the packages the project needs. Make sure those packages are installed so that we will be able to run our project. We will use `pip` to install the packages.
+The only dependency the project has is PyQt 5. As such, you must install Qt 5 first before proceeding. Make sure that Qt 5 is installed so that we will be able to run our project. Please refer to the *[Getting Started](http://doc.qt.io/qt-5/gettingstarted.html)* guide of Qt to know how to install Qt in your system. We must also install the Python 3 binding of Qt 5.
 
     $ cd /path/to/project/
-    $ pip install  -r requirements.txt # or pip3
+    $ pip install PyQt5 # or pip3
 
 If all things went well, we should have all the packages we need to run the project.
 
 
-#### Running the project
+#### Installing the project
 
-Before we can use the project or run tests, we must setup the project's environment. This is different from installing the packages. This will install the project itself to your system (or the virtual environment) but still will allow us to make changes to the project's code. This is usually only done once.
+Before we can use the project or run tests, we must install the project to your system or, preferably, virtual environment.
 
-    $ python3 setup.py develop # or python
+    $ python3 setup.py install
 
 After performing that, we may now proceed to running the project itself or the tests.
 
@@ -116,7 +110,7 @@ After performing that, we may now proceed to running the project itself or the t
 
 To run the project, we just type the following command.
 
-    $ python3 src/mlfq_sim/App.py # or python
+    $ mlfq-sim
 
 This will open the application itself.
 
@@ -146,7 +140,7 @@ This project is licensed under the [MIT License](LICENSE.txt).
 ## Credits
 The project uses the free version of [PyQt](https://riverbankcomputing.com/software/pyqt/intro) 5 and open source version of [Qt](https://www.qt.io/) 5 for the GUI component. They are licensed under [GPLv3](https://riverbankcomputing.com/commercial/pyqt) and [LGPLv3 (with some parts under GPLv3)](https://doc.qt.io/qt-5.10/licensing.html), respectively.
 
-This project uses [gantt](https://github.com/stefanSchinkel/gantt) by [Stefan Schinkel](http://dreeg.org/) to generate Gantt charts. The `gantt` project uses `matplotlib` and `numpy` which are licensed under a [custom license](http://matplotlib.org/users/license.html) derived from the [PSF license](https://docs.python.org/3/license.html) and BSD-new license, respectively.
+This project uses [PyQtImageViewer](https://github.com/marcel-goldschen-ohm/PyQtImageViewer) by [Marcel Goldschen Ohm](https://github.com/marcel-goldschen-ohm) to display the process schedule in the simulator. PyQtImageViewer is licensed under the [MIT](https://docs.pytest.org/en/latest/license.html) license.
 
 The project uses [pytest](https://pytest.org) for writing and running tests. pytest is licensed under the [MIT](https://docs.pytest.org/en/latest/license.html) license.
 
