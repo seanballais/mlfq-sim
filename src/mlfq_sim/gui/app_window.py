@@ -1,10 +1,5 @@
 # -*- coding: utf-8 -*-
-
-# Form implementation generated from reading ui file '../mlfq-sim-gui/mlfq-sim-gui/appwindow.ui'
-#
-# Created by: PyQt5 UI code generator 5.10.1
-#
-# WARNING! All changes made in this file will be lost!
+import json
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -297,17 +292,18 @@ class Ui_AppWindow(object):
             self.queues_table.removeRow(cell.row())
             
     def simulate_mlfq(self):
+        # Gather all processes and queues.
         processes = []
         queues = []
 
         num_processes = self.processes_table.rowCount()
         for row_index in range(num_processes):
-            pid = self.processes_table.item(row_index, 0).text()
-            arrival_time = self.processes_table.item(row_index, 1).text()
-            burst_time = self.processes_table.item(row_index, 2).text()
-            priority = self.processes_table.item(row_index, 3).text()
+            pid = int(self.processes_table.item(row_index, 0).text())
+            arrival_time = int(self.processes_table.item(row_index, 1).text())
+            burst_time = int(self.processes_table.item(row_index, 2).text())
+            priority = int(self.processes_table.item(row_index, 3).text())
 
-            processes.append(ProcessControlBlock(pid, arrival_time, burst_time, priority)))
+            processes.append(ProcessControlBlock(pid, arrival_time, burst_time, priority))
 
         num_queues = self.queues_table.rowCount()
         for row_index in range(num_queues):
@@ -325,8 +321,33 @@ class Ui_AppWindow(object):
             elif algorithm == 'Round Robin':
                 algorithm = 'round_robin'
 
+            mlfq_algorithm = getattr(algorithms, algorithm)
             quanta = self.queues_table.item(row_index, 1).text()
 
-            queues.append(MLFQQueue(algorithm, int(quanta)))
+            queues.append(MLFQQueue(mlfq_algorithm, int(quanta)))
 
         # Set MLFQ config.
+        mlfq_algorithm = self.mlfq_algorithm_selection.currentText()
+        time_allotment = int(self.mlfq_time_allotment_value.text())
+        if mlfq_algorithm != 'Fixed Time Slots':
+            time_allotment = 0
+        elif mlfq_algorithm == 'Fixed Time Slots' and time_allotment == 0:
+            error_message = QtWidgets.QMessageBox()
+            error_message.setIcon(QtWidgets.QMessageBox.Critical)
+            error_message.setText('Wrong quanta entered!')
+            error_message.setInformativeText('Queue quanta cannot be 0 when using round robin.')
+            error_message.setWindowTitle('Multi-Level Feedback Queue Simulator Error')
+            error_message.exec()
+            return
+
+        mlfq1 = MLFQ(processes, queues, time_allotment)
+        schedule, processes, run_time = mlfq1.simulate()
+
+        output = {
+            'schedule': schedule,
+            'processes': [process.as_dict() for process in processes],
+            'run_time': run_time
+        }
+
+        print(json.dumps(output))
+
