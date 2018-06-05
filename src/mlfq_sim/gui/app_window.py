@@ -8,6 +8,11 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+from mlfq_sim.ds.pcb import ProcessControlBlock
+from mlfq_sim.scheduler import algorithms
+from mlfq_sim.scheduler.mlfq import MLFQ
+from mlfq_sim.scheduler.mlfq import MLFQQueue
+
 class Ui_AppWindow(object):
     def setupUi(self, AppWindow):
         AppWindow.setObjectName("AppWindow")
@@ -216,12 +221,15 @@ class Ui_AppWindow(object):
         self.simulate_mlfq_layout.setObjectName("simulate_mlfq_layout")
         spacerItem7 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.simulate_mlfq_layout.addItem(spacerItem7)
+
         self.simulate_mlfq_button = QtWidgets.QPushButton(self.centralWidget)
         font = QtGui.QFont()
         font.setBold(True)
         font.setWeight(75)
         self.simulate_mlfq_button.setFont(font)
         self.simulate_mlfq_button.setObjectName("simulate_mlfq_button")
+        self.simulate_mlfq_button.clicked.connect(self.simulate_mlfq)
+
         self.simulate_mlfq_layout.addWidget(self.simulate_mlfq_button)
         spacerItem8 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.simulate_mlfq_layout.addItem(spacerItem8)
@@ -289,4 +297,36 @@ class Ui_AppWindow(object):
             self.queues_table.removeRow(cell.row())
             
     def simulate_mlfq(self):
-        pass
+        processes = []
+        queues = []
+
+        num_processes = self.processes_table.rowCount()
+        for row_index in range(num_processes):
+            pid = self.processes_table.item(row_index, 0).text()
+            arrival_time = self.processes_table.item(row_index, 1).text()
+            burst_time = self.processes_table.item(row_index, 2).text()
+            priority = self.processes_table.item(row_index, 3).text()
+
+            processes.append(ProcessControlBlock(pid, arrival_time, burst_time, priority)))
+
+        num_queues = self.queues_table.rowCount()
+        for row_index in range(num_queues):
+            algorithm = self.queues_table.item(row_index, 0).text()
+            if algorithm == 'First Come, First Serve':
+                algorithm = 'fcfs'
+            elif algorithm == 'Shortest Job First':
+                algorithm = 'sjf'
+            elif algorithm == 'Shortest Remaining Time First':
+                algorithm = 'srtf'
+            elif algorithm == 'Non-Preemptive Priority':
+                algorithm = 'non_preemptive'
+            elif algorithm == 'Preemptive Priority':
+                algorithm = 'preemptive'
+            elif algorithm == 'Round Robin':
+                algorithm = 'round_robin'
+
+            quanta = self.queues_table.item(row_index, 1).text()
+
+            queues.append(MLFQQueue(algorithm, int(quanta)))
+
+        # Set MLFQ config.
