@@ -2,6 +2,9 @@
 import json
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PIL import Image, ImageDraw
+
+from mlfq_sim.gui.vendor.QtImageViewer import QtImageViewer
 
 from mlfq_sim.ds.pcb import ProcessControlBlock
 from mlfq_sim.scheduler import algorithms
@@ -21,14 +24,15 @@ class Ui_AppWindow(object):
         self.main_separator = QtWidgets.QVBoxLayout()
         self.main_separator.setSpacing(6)
         self.main_separator.setObjectName("main_separator")
-        self.gantt_chart = QtWidgets.QLabel(self.centralWidget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.gantt_chart.sizePolicy().hasHeightForWidth())
-        self.gantt_chart.setSizePolicy(sizePolicy)
+
+        self.gantt_chart = QtImageViewer()
         self.gantt_chart.setAlignment(QtCore.Qt.AlignCenter)
         self.gantt_chart.setObjectName("gantt_chart")
+        self.gantt_chart.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
+        self.gantt_chart.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
+        self.gantt_chart.canZoom = True
+        self.gantt_chart.canPan = True
+
         self.main_separator.addWidget(self.gantt_chart)
         self.process_queue_creator = QtWidgets.QHBoxLayout()
         self.process_queue_creator.setSpacing(6)
@@ -238,7 +242,6 @@ class Ui_AppWindow(object):
     def retranslateUi(self, AppWindow):
         _translate = QtCore.QCoreApplication.translate
         AppWindow.setWindowTitle(_translate("AppWindow", "Multi-Level Feedback Queue Simulator"))
-        self.gantt_chart.setText(_translate("AppWindow", "Gantt Chart will be shown here."))
         self.queues_label.setText(_translate("AppWindow", "Queues"))
         self.add_queue_label.setText(_translate("AppWindow", "Add Queue"))
         self.algorithm_selection_label.setText(_translate("AppWindow", "Select algorithm"))
@@ -349,5 +352,40 @@ class Ui_AppWindow(object):
             'run_time': run_time
         }
 
-        print(json.dumps(output))
+        self._draw_schedule(output)
+
+        schedule_image = QtGui.QImage('schedule.png')
+        self.gantt_chart.setImage(schedule_image)
+
+    def _draw_schedule(self, output):
+        image_width = (output['run_time'] * 10) + 100  # 10 px per time unit.
+        image_height = 210
+
+        schedule_image = Image.new('RGB', (image_width, image_height), (255, 255, 255))
+
+        draw = ImageDraw.Draw(schedule_image)
+        for process in output['processes']:
+            for item in process['execution_history']:
+                # Draw the timeline.
+                x0, y0 = (item['start'] * 10) + 50, 70
+                x1, y1 = (item['end'] * 10) + 50, 140
+                draw.rectangle((x0, y0, x1, y1), fill=(1, 50, 67))
+
+                # Draw the text.
+                draw.text((x0 - 2, y0 + 85), str(item['start']), fill=(108, 122, 137))
+                draw.text((x1 - 2, y1 + 15), str(item['end']), fill=(108, 122, 137))
+
+                # Draw the text markers.
+                draw.line((x0, y0, x0, y0 + 80), fill=(0, 0, 0))
+                draw.line((x1, y0, x1, y1 + 10), fill=(0, 0, 0))
+
+                # Draw process id.
+                x_midpoint = x0 + ((x1 - x0) / 2)
+                y_midpoint = y0 + ((y1 - y0) / 2)
+                draw.text((x_midpoint - 3, y_midpoint - 3), 'P' + str(process['pid']), fill=(255, 255, 255))
+
+        del draw
+
+        schedule_image.save('schedule.png')
+
 
