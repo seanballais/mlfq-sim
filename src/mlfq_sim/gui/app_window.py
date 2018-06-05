@@ -186,8 +186,11 @@ class Ui_AppWindow(object):
         self.processes_buttons_layout = QtWidgets.QHBoxLayout()
         self.processes_buttons_layout.setSpacing(6)
         self.processes_buttons_layout.setObjectName("processes_buttons_layout")
+
         self.add_new_process_button = QtWidgets.QPushButton(self.centralWidget)
         self.add_new_process_button.setObjectName("add_new_process_button")
+        self.add_new_process_button.clicked.connect(self.add_new_row_to_process)
+
         self.processes_buttons_layout.addWidget(self.add_new_process_button)
         self.view_process_execution_details = QtWidgets.QPushButton(self.centralWidget)
         self.view_process_execution_details.setEnabled(False)
@@ -195,8 +198,11 @@ class Ui_AppWindow(object):
         self.processes_buttons_layout.addWidget(self.view_process_execution_details)
         spacerItem5 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.processes_buttons_layout.addItem(spacerItem5)
+
         self.delete_selected_process_button = QtWidgets.QPushButton(self.centralWidget)
         self.delete_selected_process_button.setObjectName("delete_selected_process_button")
+        self.delete_selected_process_button.clicked.connect(self.delete_selected_process)
+
         self.processes_buttons_layout.addWidget(self.delete_selected_process_button)
         self.processes_panel.addLayout(self.processes_buttons_layout)
         self.processes_info = QtWidgets.QLabel(self.centralWidget)
@@ -248,4 +254,14 @@ class Ui_AppWindow(object):
         self.view_process_execution_details.setText(_translate("AppWindow", "View Process Execution Details"))
         self.processes_info.setText(_translate("AppWindow", "NOTE: Select a row in the table above to be able to delete a process."))
         self.simulate_mlfq_button.setText(_translate("AppWindow", "▷ Simulate MLFQ"))
+
+    def add_new_row_to_process(self):
+        num_processes = self.processes_table.rowCount()
+        self.processes_table.insertRow(num_processes)
+
+    def delete_selected_process(self):
+        if len(self.processes_table.selectedIndexes()) > 0:
+            cell = self.processes_table.selectedIndexes()[0]
+            self.processes_table.removeRow(cell.row())
+            
 
