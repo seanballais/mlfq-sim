@@ -91,8 +91,11 @@ class Ui_AppWindow(object):
         self.queue_quanta = QtWidgets.QSpinBox(self.centralWidget)
         self.queue_quanta.setObjectName("queue_quanta")
         self.add_queue_label_widgets.addWidget(self.queue_quanta)
+
         self.add_new_queue_button = QtWidgets.QPushButton(self.centralWidget)
         self.add_new_queue_button.setObjectName("add_new_queue_button")
+        self.add_new_queue_button.clicked.connect(self.add_new_queue)
+        
         self.add_queue_label_widgets.addWidget(self.add_new_queue_button)
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.add_queue_label_widgets.addItem(spacerItem)
@@ -114,15 +117,12 @@ class Ui_AppWindow(object):
         self.delete_queue_widgets = QtWidgets.QHBoxLayout()
         self.delete_queue_widgets.setSpacing(6)
         self.delete_queue_widgets.setObjectName("delete_queue_widgets")
-        self.queue_row_label = QtWidgets.QLabel(self.centralWidget)
-        self.queue_row_label.setObjectName("queue_row_label")
-        self.delete_queue_widgets.addWidget(self.queue_row_label)
-        self.delete_queue_row_value = QtWidgets.QSpinBox(self.centralWidget)
-        self.delete_queue_row_value.setObjectName("delete_queue_row_value")
-        self.delete_queue_widgets.addWidget(self.delete_queue_row_value)
+
         self.delete_queue_button = QtWidgets.QPushButton(self.centralWidget)
         self.delete_queue_button.setObjectName("delete_queue_button")
+        self.delete_queue_button.clicked.connect(self.delete_selected_queue)
         self.delete_queue_widgets.addWidget(self.delete_queue_button)
+
         spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.delete_queue_widgets.addItem(spacerItem1)
         self.delete_queue_layout.addLayout(self.delete_queue_widgets)
@@ -243,8 +243,7 @@ class Ui_AppWindow(object):
         self.add_new_queue_button.setText(_translate("AppWindow", "Add New Queue"))
         self.add_queue_info.setText(_translate("AppWindow", "NOTE: Topmost queue will be the first queue in the MLFQ."))
         self.delete_queue_label.setText(_translate("AppWindow", "Delete Queue"))
-        self.queue_row_label.setText(_translate("AppWindow", "Queue Row"))
-        self.delete_queue_button.setText(_translate("AppWindow", "Delete Queue"))
+        self.delete_queue_button.setText(_translate("AppWindow", "Delete Selected Queue"))
         self.mlfq_config_label.setText(_translate("AppWindow", "MLFQ Configuration"))
         self.mlfq_algorith_label.setText(_translate("AppWindow", "Select algorithm"))
         self.time_allotment_label.setText(_translate("AppWindow", "Time Allotment"))
@@ -263,5 +262,30 @@ class Ui_AppWindow(object):
         if len(self.processes_table.selectedIndexes()) > 0:
             cell = self.processes_table.selectedIndexes()[0]
             self.processes_table.removeRow(cell.row())
+
+    def add_new_queue(self):
+        queue_algorithm = self.algorithms_selection.currentText()
+        quanta = self.queue_quanta.text()
+        if queue_algorithm != 'Round Robin':
+            quanta = '0'
+        elif queue_algorithm == 'Round Robin' and int(quanta) == 0:
+            error_message = QtWidgets.QMessageBox()
+            error_message.setIcon(QtWidgets.QMessageBox.Critical)
+            error_message.setText('Wrong quanta entered!')
+            error_message.setInformativeText('Queue quanta cannot be 0 when using round robin.')
+            error_message.setWindowTitle('Multi-Level Feedback Queue Simulator Error')
+            error_message.exec()
+            return
+
+        num_queues = self.queues_table.rowCount()
+        
+        self.queues_table.insertRow(num_queues)
+        self.queues_table.setItem(num_queues, 0, QtWidgets.QTableWidgetItem(queue_algorithm))
+        self.queues_table.setItem(num_queues, 1, QtWidgets.QTableWidgetItem(quanta))
+
+    def delete_selected_queue(self):
+        if len(self.queues_table.selectedIndexes()) > 0:
+            cell = self.queues_table.selectedIndexes()[0]
+            self.queues_table.removeRow(cell.row())
             
 
