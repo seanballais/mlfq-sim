@@ -14,7 +14,7 @@ from mlfq_sim.scheduler.mlfq import MLFQQueue
 class Ui_AppWindow(object):
     def setupUi(self, AppWindow):
         AppWindow.setObjectName("AppWindow")
-        AppWindow.resize(853, 507)
+        AppWindow.resize(878, 507)
         self.centralWidget = QtWidgets.QWidget(AppWindow)
         self.centralWidget.setObjectName("centralWidget")
         self.gridLayout = QtWidgets.QGridLayout(self.centralWidget)
@@ -261,7 +261,10 @@ class Ui_AppWindow(object):
         self.add_new_process_button.setText(_translate("AppWindow", "Add New Process"))
         self.delete_selected_process_button.setText(_translate("AppWindow", "Delete Selected Process"))
         self.view_process_execution_details.setText(_translate("AppWindow", "View Process Execution Details"))
-        self.processes_info.setText(_translate("AppWindow", "NOTE: Start modifying a process's data by double clicking on a process's row cell."))
+        self.processes_info.setText(_translate(
+            "AppWindow",
+            "NOTE: Higher priority number has higher priority. To edit a cell's value, just select a cell and type."
+        ))
         self.simulate_mlfq_button.setText(_translate("AppWindow", "▷ Simulate MLFQ"))
 
     def add_new_row_to_process(self):
@@ -304,15 +307,91 @@ class Ui_AppWindow(object):
         queues = []
 
         num_processes = self.processes_table.rowCount()
-        for row_index in range(num_processes):
-            pid = int(self.processes_table.item(row_index, 0).text())
-            arrival_time = int(self.processes_table.item(row_index, 1).text())
-            burst_time = int(self.processes_table.item(row_index, 2).text())
-            priority = int(self.processes_table.item(row_index, 3).text())
+        if num_processes == 0:
+            error_message = QtWidgets.QMessageBox()
+            error_message.setIcon(QtWidgets.QMessageBox.Critical)
+            error_message.setText('No processes entered!')
+            error_message.setInformativeText('We cannot simulate CPU scheduling without processes.')
+            error_message.setWindowTitle('Multi-Level Feedback Queue Simulator Error')
+            error_message.exec()
+            return
 
-            processes.append(ProcessControlBlock(pid, arrival_time, burst_time, priority))
+        used_pids = set()
+        for row_index in range(num_processes):
+            try:
+                if self.processes_table.item(row_index, 0) is None:
+                    error_message = QtWidgets.QMessageBox()
+                    error_message.setIcon(QtWidgets.QMessageBox.Critical)
+                    error_message.setText('Empty PID!')
+                    error_message.setInformativeText('One of the processes does not have a PID.')
+                    error_message.setWindowTitle('Multi-Level Feedback Queue Simulator Error')
+                    error_message.exec()
+                    return
+
+                pid = int(self.processes_table.item(row_index, 0).text())
+                if pid in used_pids:
+                    error_message = QtWidgets.QMessageBox()
+                    error_message.setIcon(QtWidgets.QMessageBox.Critical)
+                    error_message.setText('PID Already Used!')
+                    error_message.setInformativeText('No two processes can have the same PID.')
+                    error_message.setWindowTitle('Multi-Level Feedback Queue Simulator Error')
+                    error_message.exec()
+                    return
+                else:
+                    used_pids.add(pid)
+
+                if self.processes_table.item(row_index, 1) is None:
+                    error_message = QtWidgets.QMessageBox()
+                    error_message.setIcon(QtWidgets.QMessageBox.Critical)
+                    error_message.setText('Empty Arrival Time!')
+                    error_message.setInformativeText('One of the processes does not have an arrival time.')
+                    error_message.setWindowTitle('Multi-Level Feedback Queue Simulator Error')
+                    error_message.exec()
+                    return
+
+                arrival_time = abs(int(self.processes_table.item(row_index, 1).text()))
+
+                if self.processes_table.item(row_index, 2) is None:
+                    error_message = QtWidgets.QMessageBox()
+                    error_message.setIcon(QtWidgets.QMessageBox.Critical)
+                    error_message.setText('Empty Burst Time!')
+                    error_message.setInformativeText('One of the processes does not have a burst time.')
+                    error_message.setWindowTitle('Multi-Level Feedback Queue Simulator Error')
+                    error_message.exec()
+                    return
+
+                burst_time = abs(int(self.processes_table.item(row_index, 2).text()))
+
+                if self.processes_table.item(row_index, 3) is None:
+                    error_message = QtWidgets.QMessageBox()
+                    error_message.setIcon(QtWidgets.QMessageBox.Critical)
+                    error_message.setText('Empty Priority Number!')
+                    error_message.setInformativeText('One of the processes does not have a priority number.')
+                    error_message.setWindowTitle('Multi-Level Feedback Queue Simulator Error')
+                    error_message.exec()
+                    return
+                priority = abs(int(self.processes_table.item(row_index, 3).text()))
+
+                processes.append(ProcessControlBlock(pid, arrival_time, burst_time, priority))
+            except ValueError:
+                error_message = QtWidgets.QMessageBox()
+                error_message.setIcon(QtWidgets.QMessageBox.Critical)
+                error_message.setText('Only use numbers!')
+                error_message.setInformativeText('PIDs, Arrival and Burst Times, and Priority Numbers must be numbers.')
+                error_message.setWindowTitle('Multi-Level Feedback Queue Simulator Error')
+                error_message.exec()
+                return
 
         num_queues = self.queues_table.rowCount()
+        if num_queues == 0:
+            error_message = QtWidgets.QMessageBox()
+            error_message.setIcon(QtWidgets.QMessageBox.Critical)
+            error_message.setText('No processes entered!')
+            error_message.setInformativeText('We cannot simulate CPU scheduling without processes.')
+            error_message.setWindowTitle('Multi-Level Feedback Queue Simulator Error')
+            error_message.exec()
+            return
+
         for row_index in range(num_queues):
             algorithm = self.queues_table.item(row_index, 0).text()
             if algorithm == 'First Come, First Serve':
