@@ -81,7 +81,9 @@ class ProcessControlBlock:
 
     def execute(self, start_time, length, record=True):
         if self.remaining_time == 0:
-            sys.exit(-1)  # For testing purposes. Do not include malformed result.
+            raise ExecutionRecordingException('Cannot record execution period '
+                                              + 'because the process has already'
+                                              + ' completed execution.')
 
         num_execution_items = len(self.execution_history)
         recent_item = None
@@ -94,7 +96,10 @@ class ProcessControlBlock:
             item_end = item_start + recent_item.get_length()
             
             if start_time <= item_start or start_time < item_end:
-                sys.exit(-1) # For testing purposes. Do not include malformed result.
+                raise ExecutionRecordingException('Cannot record an execution period that has'
+                                                  + ' occurred in the past, or in between '
+                                                  + 'a certain previous execution period of '
+                                                  + 'the process.')
             elif start_time == item_end:
                 increment_item = True
 

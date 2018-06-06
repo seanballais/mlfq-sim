@@ -179,6 +179,13 @@ def _simulate_schedule(processes, priority_criterion,
         if not wait_queue.empty():
             curr_process = wait_queue.get()
         else:
+            if not arrival_queue.empty() and new_process is None:
+                run_time += 1
+                if time_allotment > 0:
+                    remaining_time -= 1
+
+                continue
+
             break
 
         while curr_process.get_remaining_time() > 0:
