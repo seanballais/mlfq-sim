@@ -59,6 +59,7 @@ class Ui_AppWindow(object):
         self.queues_table.setRowCount(0)
         self.queues_table.setHorizontalHeaderLabels('Queue Scheduling Algorithm; Time Allotment'.split(';'))
         self.queues_table.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+        self.queues_table.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
         
         self.queues_panel.addWidget(self.queues_table)
         self.add_queue_layout = QtWidgets.QVBoxLayout()
