@@ -71,6 +71,13 @@ def round_robin(processes, additional_processes=list(), quanta=5, time_allotment
         if not ready_queue.empty():
             curr_process = ready_queue.get()
         else:
+            if not arrival_queue.empty() and new_process is None:
+                run_time += 1
+                if time_allotment > 0:
+                    remaining_time -= 1
+
+                continue
+            
             break
 
         while quanta_counter < quanta and curr_process.get_remaining_time() > 0:

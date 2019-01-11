@@ -87,10 +87,6 @@ class MLFQ:
         run_time = 0
         time_allotment = 0
 
-        if len(self.queues) == 1:
-            while not self.arrival_queue.empty():
-                self.queues[0].add_process(self.arrival_queue.get())
-
         while not self.arrival_queue.empty() or self._queues_has_processes():
             preemption_time = self._nearest_preemption_time(run_time)
             current_queue = self.queues[current_queue_index]

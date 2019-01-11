@@ -15,6 +15,7 @@ from mlfq_sim.scheduler.mlfq import MLFQQueue
 class Ui_AppWindow(object):
     def __init__(self):
         self._used_process_colours = set()
+        self._used_pids = set()
 
 
     def setupUi(self, AppWindow):
@@ -276,6 +277,7 @@ class Ui_AppWindow(object):
     def add_new_row_to_process(self):
         num_processes = self.processes_table.rowCount()
         self.processes_table.insertRow(num_processes)
+        self.processes_table.setItem(num_processes, 0, QtWidgets.QTableWidgetItem(str(self._get_random_pid())))
 
     def delete_selected_process(self):
         if len(self.processes_table.selectedIndexes()) > 0:
@@ -308,6 +310,13 @@ class Ui_AppWindow(object):
             self.queues_table.removeRow(cell.row())
             
     def simulate_mlfq(self):
+        self._used_pids.clear()
+        self._used_process_colours.clear()  # Clearing ensures that we are able to reuse colours that
+                                            # have been previously used. Each simulation run will use a
+                                            # different colour for each process. This constant colour
+                                            # change on every new run will also allow users to easily
+                                            # notice that a new simulation run has occurred.
+
         # Gather all processes and queues.
         processes = []
         queues = []
@@ -448,15 +457,9 @@ class Ui_AppWindow(object):
 
 
     def _draw_schedule(self, output):
-        time_unit_size = 30 # This is in pixels.
+        time_unit_size = 50 # This is in pixels.
         image_width = (output['run_time'] * time_unit_size) + 100
         image_height = 210
-
-        self._used_process_colours.clear()  # Clearing ensures that we are able to reuse colours that
-                                            # have been previously used. Each simulation run will use a
-                                            # different colour for each process. This constant colour
-                                            # change on every new run will also allow users to easily
-                                            # notice that a new simulation run has occurred.
 
         schedule_image = Image.new('RGB', (image_width, image_height), (255, 255, 255))
 
@@ -490,7 +493,7 @@ class Ui_AppWindow(object):
 
     def _get_random_colour(self):
         # Get a random flat colour that has not been used already by a
-        # different process in the current simulation run.
+        # process in the current simulation run.
         gotUnusedColour = False
         colour = None
         while not gotUnusedColour:
@@ -520,3 +523,18 @@ class Ui_AppWindow(object):
                                     second_hex_column_value)
 
         return int(hex_value, 0)
+
+
+    def _get_random_pid(self):
+        # Get a random PID that has not been used already by a
+        # process in the current simulation run.
+        gotUnusedPid = False
+        pid = None
+        num_processes = self.processes_table.rowCount()
+        while not gotUnusedPid:
+            pid = random.choice(range(num_processes + 100))
+            if pid not in self._used_pids:
+                gotUnusedPid = True
+                self._used_pids.add(pid)
+
+        return pid
