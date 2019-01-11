@@ -13,6 +13,10 @@ from mlfq_sim.scheduler.mlfq import MLFQ
 from mlfq_sim.scheduler.mlfq import MLFQQueue
 
 class Ui_AppWindow(object):
+    def __init__(self):
+        self._used_process_colours = set()
+
+
     def setupUi(self, AppWindow):
         AppWindow.setObjectName("AppWindow")
         AppWindow.resize(878, 507)
@@ -448,6 +452,12 @@ class Ui_AppWindow(object):
         image_width = (output['run_time'] * time_unit_size) + 100
         image_height = 210
 
+        self._used_process_colours.clear()  # Clearing ensures that we are able to reuse colours that
+                                            # have been previously used. Each simulation run will use a
+                                            # different colour for each process. This constant colour
+                                            # change on every new run will also allow users to easily
+                                            # notice that a new simulation run has occurred.
+
         schedule_image = Image.new('RGB', (image_width, image_height), (255, 255, 255))
 
         draw = ImageDraw.Draw(schedule_image)
@@ -479,10 +489,19 @@ class Ui_AppWindow(object):
 
 
     def _get_random_colour(self):
-        # Get a random flat colour.
-        return (self._get_random_colour_component_value(),
-                self._get_random_colour_component_value(),
-                self._get_random_colour_component_value())
+        # Get a random flat colour that has not been used already by a
+        # different process in the current simulation run.
+        gotUnusedColour = False
+        colour = None
+        while not gotUnusedColour:
+            colour = (self._get_random_colour_component_value(),
+                      self._get_random_colour_component_value(),
+                      self._get_random_colour_component_value())
+            if colour not in self._used_process_colours:
+                gotUnusedColour = True
+                self._used_process_colours.add(colour)
+
+        return colour
 
 
     def _get_random_colour_component_value(self):
