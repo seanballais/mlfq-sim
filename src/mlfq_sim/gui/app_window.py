@@ -458,33 +458,59 @@ class Ui_AppWindow(object):
 
     def _draw_schedule(self, output):
         time_unit_size = 50 # This is in pixels.
-        image_width = (output['run_time'] * time_unit_size) + 100
+        timeline_width = output['run_time'] * time_unit_size
+        image_width = timeline_width + 100
         image_height = 210
 
         schedule_image = Image.new('RGB', (image_width, image_height), (255, 255, 255))
 
         draw = ImageDraw.Draw(schedule_image)
+
         for process in output['processes']:
             fill_colour = self._get_random_colour()
 
             for item in process['execution_history']:
-                # Draw the timeline.
+                # Draw a timeline unit for the process.
                 x0, y0 = (item['start'] * time_unit_size) + 50, 70
                 x1, y1 = (item['end'] * time_unit_size) + 50, 140
                 draw.rectangle((x0, y0, x1, y1), fill=fill_colour)
 
                 # Draw the text.
-                draw.text((x0 - 2, y0 + 85), str(item['start']), fill=(108, 122, 137))
+                draw.text((x0 - 2, y1 + 15), str(item['start']), fill=(108, 122, 137))
                 draw.text((x1 - 2, y1 + 15), str(item['end']), fill=(108, 122, 137))
 
                 # Draw the text markers.
-                draw.line((x0, y0, x0, y0 + 80), fill=(0, 0, 0))
+                draw.line((x0, y0, x0, y1 + 10), fill=(0, 0, 0))
                 draw.line((x1, y0, x1, y1 + 10), fill=(0, 0, 0))
 
                 # Draw process id.
                 x_midpoint = x0 + ((x1 - x0) / 2)
                 y_midpoint = y0 + ((y1 - y0) / 2)
                 draw.text((x_midpoint - 3, y_midpoint - 3), 'P' + str(process['pid']), fill=(255, 255, 255))
+
+        # Draw the timeline box and the zero time marker.
+        box_x0 = (image_width / 2) - (timeline_width / 2)
+        box_x1 = (image_width / 2) + (timeline_width / 2)
+
+        # Draw the top line of the box.        
+        draw.line((box_x0, 70, box_x1, 70), fill=(0, 0, 0))
+
+        # Draw the bottom line of the box.
+        draw.line((box_x0, 140, box_x1, 140), fill=(0, 0, 0))
+
+        # Draw the left line of the box.
+        draw.line((box_x0, 70, box_x0, 140), fill=(0, 0, 0))
+
+        # No need to draw the right line of the box since we can be sure that
+        # it has been rendered already when the process timeline units were
+        # being rendered. The same reason goes for skipping rendering the
+        # last time marker text.
+
+        # Draw the zero time marker.
+        draw.line((box_x0, 70, box_x0, 150), fill=(0, 0, 0))
+
+        # Draw the zero time marker text.
+        draw.text((box_x0 - 2, 155), '0', fill=(108, 122, 137))
 
         del draw
 
