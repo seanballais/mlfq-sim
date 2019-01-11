@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
+import random
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PIL import Image, ImageDraw
@@ -441,19 +442,23 @@ class Ui_AppWindow(object):
         schedule_image = QtGui.QImage('schedule.png')
         self.gantt_chart.setImage(schedule_image)
 
+
     def _draw_schedule(self, output):
-        image_width = (output['run_time'] * 10) + 100  # 10 px per time unit.
+        time_unit_size = 30 # This is in pixels.
+        image_width = (output['run_time'] * time_unit_size) + 100
         image_height = 210
 
         schedule_image = Image.new('RGB', (image_width, image_height), (255, 255, 255))
 
         draw = ImageDraw.Draw(schedule_image)
         for process in output['processes']:
+            fill_colour = self._get_random_colour()
+
             for item in process['execution_history']:
                 # Draw the timeline.
-                x0, y0 = (item['start'] * 10) + 50, 70
-                x1, y1 = (item['end'] * 10) + 50, 140
-                draw.rectangle((x0, y0, x1, y1), fill=(1, 50, 67))
+                x0, y0 = (item['start'] * time_unit_size) + 50, 70
+                x1, y1 = (item['end'] * time_unit_size) + 50, 140
+                draw.rectangle((x0, y0, x1, y1), fill=fill_colour)
 
                 # Draw the text.
                 draw.text((x0 - 2, y0 + 85), str(item['start']), fill=(108, 122, 137))
@@ -473,3 +478,26 @@ class Ui_AppWindow(object):
         schedule_image.save('schedule.png')
 
 
+    def _get_random_colour(self):
+        # Get a random flat colour.
+        return (self._get_random_colour_component_value(),
+                self._get_random_colour_component_value(),
+                self._get_random_colour_component_value())
+
+
+    def _get_random_colour_component_value(self):
+        # Colours based on the colour wheel from
+        # http://paletton.com/#uid=1300u0kllllaFw0g0qFqFg0w0aF.
+        # Value of the first hex column can range from 0x2 to 0xA.
+        # The value of the second hex column can be any of the following:
+        #    0, 1, 3, 4, 6, 7, 9, A, C, E, F
+        first_hex_column_values = [str(i + 2) for i in list(range(8))] + ['A']
+        first_hex_column_value = random.choice(first_hex_column_values)
+        second_hex_column_value = random.choice(['0', '1', '3',
+                                                 '4', '6', '7',
+                                                 '9', 'A', 'C',
+                                                 'E', 'F'])
+        hex_value = '0x{}{}'.format(first_hex_column_value,
+                                    second_hex_column_value)
+
+        return int(hex_value, 0)
