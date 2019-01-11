@@ -88,12 +88,12 @@ You may also use a GUI Git client, if you want to.
 
 
 #### Installing the dependencies
-**WARNING: If you didn't install and use `virtualenv`, you will be installing packages globally, which is [not good](https://realpython.com/python-virtual-environments-a-primer/#why-the-need-for-virtual-environments), and may lead to library versioning issues with other Python applications and packages.**
+**WARNING: If you did not install and use `virtualenv`, you will be installing packages globally, which is [not good](https://realpython.com/python-virtual-environments-a-primer/#why-the-need-for-virtual-environments), and may lead to library versioning issues with other Python applications and packages.**
 
-The only dependency the project has is PyQt 5. As such, you must install Qt 5 first before proceeding. Make sure that Qt 5 is installed so that we will be able to run our project. Please refer to the *[Getting Started](http://doc.qt.io/qt-5/gettingstarted.html)* guide of Qt to know how to install Qt in your system. We must also install the Python 3 binding of Qt 5.
+The only dependencies the project has are Qt 5 and Pillow. As such, you must install Qt 5 and Pillow first before proceeding. Make sure that Qt 5 is installed so that we will be able to run our project. Please refer to the *[Getting Started](http://doc.qt.io/qt-5/gettingstarted.html)* guide of Qt to know how to install Qt in your system. We must also install the Python 3 binding of Qt 5. Pillow is a Python library. Due to this, it can easily be installed using `pip` without having to install any prerequisites.
 
     $ cd /path/to/project/
-    $ pip install PyQt5 # or pip3
+    $ pip install PyQt5 Pillow # or pip3
 
 If all things went well, we should have all the packages we need to run the project.
 
