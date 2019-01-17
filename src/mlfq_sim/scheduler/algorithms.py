@@ -71,12 +71,12 @@ def round_robin(processes, additional_processes=list(), quanta=5, time_allotment
         if not ready_queue.empty():
             curr_process = ready_queue.get()
         else:
-            if not arrival_queue.empty() and new_process is None:
-                run_time += 1
-                if time_allotment > 0:
-                    remaining_time -= 1
+            #if not arrival_queue.empty() and new_process is None:
+            #    run_time += 1
+            #    if time_allotment > 0:
+            #        remaining_time -= 1
 
-                continue
+            #    continue
             
             break
 
@@ -186,12 +186,12 @@ def _simulate_schedule(processes, priority_criterion,
         if not wait_queue.empty():
             curr_process = wait_queue.get()
         else:
-            if not arrival_queue.empty() and new_process is None:
-                run_time += 1
-                if time_allotment > 0:
-                    remaining_time -= 1
+            #if not arrival_queue.empty() and new_process is None:
+            #    run_time += 1
+            #    if time_allotment > 0:
+            #        remaining_time -= 1
 
-                continue
+            #    continue
 
             break
 
@@ -208,6 +208,7 @@ def _simulate_schedule(processes, priority_criterion,
                         # So better put the newly arrived process to the wait queue.
                         wait_queue.put(newly_arrived_process)
                     else:
+                        print('!')
                         # Preempt the current process.
                         if curr_process.get_arrival_time() == newly_arrived_process.get_arrival_time():
                             # For case where two or more processes arrived at the same time.
