@@ -188,6 +188,8 @@ class MLFQ:
                 current_queue_index = 0
                 continue
 
+            previous_run_time = run_time
+
             # We're at the topmost queue.
             (queue_schedule,
              arrival_queue,
