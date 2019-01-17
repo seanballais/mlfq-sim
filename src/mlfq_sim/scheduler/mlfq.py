@@ -86,8 +86,13 @@ class MLFQ:
         current_queue_index = 0
         run_time = 0
         time_allotment = 0
+        previous_run_time = -1
 
         while not self.arrival_queue.empty() or self._queues_has_processes():
+            if run_time - previous_run_time == 0:
+                # The run_time has not moved, so we just move time forward.
+                run_time += 1
+
             preemption_time = self._nearest_preemption_time(run_time)
             current_queue = self.queues[current_queue_index]
 
@@ -110,6 +115,8 @@ class MLFQ:
                 run_time = preemption_time
                 current_queue_index = 0
                 continue
+
+            previous_run_time = run_time
 
             (queue_schedule,
              arrival_queue,
@@ -152,8 +159,13 @@ class MLFQ:
         schedule = []
         current_queue_index = 0
         run_time = 0
+        previous_run_time = -1
 
         while not self.arrival_queue.empty() or self._queues_has_processes():
+            if run_time - previous_run_time == 0:
+                # The run_time has not moved, so we just move time forward.
+                run_time += 1
+
             current_queue = self.queues[current_queue_index]
 
             if current_queue_index == 0:
